@@ -29,6 +29,7 @@ class DownloadsScreen extends StatelessWidget {
                     child: const Text('Clear all downloads'),
                     onTap: () {
                       Future.delayed(Duration.zero, () {
+                        if (!context.mounted) return;
                         _showClearDialog(context);
                       });
                     },

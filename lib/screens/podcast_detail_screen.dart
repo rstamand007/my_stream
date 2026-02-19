@@ -67,7 +67,7 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          AppColors.background.withOpacity(0.7),
+                          AppColors.background.withValues(alpha: 0.7),
                           AppColors.background,
                         ],
                       ),
@@ -109,7 +109,7 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
                               await provider.unsubscribeFromPodcast(
                                 widget.podcast.id,
                               );
-                              if (mounted) {
+                              if (context.mounted) {
                                 Navigator.pop(context);
                               }
                             } else {

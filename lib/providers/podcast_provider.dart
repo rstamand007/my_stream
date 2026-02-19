@@ -10,7 +10,7 @@ class PodcastProvider with ChangeNotifier {
 
   List<Podcast> _subscribedPodcasts = [];
   List<Podcast> _searchResults = [];
-  Map<String, List<Episode>> _podcastEpisodes = {};
+  final Map<String, List<Episode>> _podcastEpisodes = {};
   bool _isLoading = false;
   String? _error;
 

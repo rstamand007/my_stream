@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/episode.dart';
 import '../services/audio_player_service.dart';
 import '../services/database_service.dart';
+import '../utils/logger.dart';
 
 class PlayerProvider with ChangeNotifier {
   final AudioPlayerService _audioService = AudioPlayerService.instance;
@@ -75,7 +76,7 @@ class PlayerProvider with ChangeNotifier {
 
       await _audioService.playEpisode(episode);
     } catch (e) {
-      print('Error playing episode: $e');
+      logger.e('Error playing episode', error: e);
     }
   }
 
@@ -134,7 +135,7 @@ class PlayerProvider with ChangeNotifier {
           _position.inSeconds,
         );
       } catch (e) {
-        print('Error saving playback position: $e');
+        logger.e('Error saving playback position', error: e);
       }
     }
   }

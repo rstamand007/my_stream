@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import '../models/episode.dart';
+import '../utils/logger.dart';
 import '../utils/constants.dart';
 
 class DownloadService {
@@ -42,7 +43,7 @@ class DownloadService {
     Function(double)? onProgress,
   ) async {
     if (_activeDownloads[episode.id] == true) {
-      print('Episode is already being downloaded');
+      logger.w('Episode is already being downloaded: ${episode.title}');
       return null;
     }
 
@@ -64,7 +65,7 @@ class DownloadService {
       // Check if file already exists
       final file = File(filePath);
       if (await file.exists()) {
-        print('File already exists: $filePath');
+        logger.i('File already exists: $filePath');
         _activeDownloads[episode.id] = false;
         return filePath;
       }
@@ -98,10 +99,10 @@ class DownloadService {
       _activeDownloads[episode.id] = false;
       _downloadProgress[episode.id] = 1.0;
 
-      print('Download completed: $filePath');
+      logger.i('Download completed: $filePath');
       return filePath;
     } catch (e) {
-      print('Error downloading episode: $e');
+      logger.e('Error downloading episode', error: e);
       _activeDownloads[episode.id] = false;
       _downloadProgress.remove(episode.id);
       return null;
@@ -118,7 +119,7 @@ class DownloadService {
       }
       return false;
     } catch (e) {
-      print('Error deleting download: $e');
+      logger.e('Error deleting download', error: e);
       return false;
     }
   }
@@ -137,7 +138,7 @@ class DownloadService {
 
       return totalSize;
     } catch (e) {
-      print('Error calculating download size: $e');
+      logger.e('Error calculating download size', error: e);
       return 0;
     }
   }
@@ -153,7 +154,7 @@ class DownloadService {
         }
       }
     } catch (e) {
-      print('Error clearing downloads: $e');
+      logger.e('Error clearing downloads', error: e);
     }
   }
 }

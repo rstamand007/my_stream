@@ -5,6 +5,7 @@ import 'package:webfeed_revised/webfeed_revised.dart';
 import '../models/podcast.dart';
 import '../models/episode.dart';
 import '../utils/constants.dart';
+import '../utils/logger.dart';
 
 class PodcastApiService {
   final _search = ps.Search();
@@ -35,7 +36,7 @@ class PodcastApiService {
       }
       return [];
     } catch (e) {
-      print('Error searching podcasts: $e');
+      logger.e('Error searching podcasts', error: e);
       return [];
     }
   }
@@ -54,7 +55,7 @@ class PodcastApiService {
       }
       return null;
     } catch (e) {
-      print('Error fetching podcast: $e');
+      logger.e('Error fetching podcast', error: e);
       return null;
     }
   }
@@ -75,14 +76,14 @@ class PodcastApiService {
             final feed = AtomFeed.parse(response.body);
             return _parseAtomEpisodes(feed, podcastId);
           } catch (e) {
-            print('Error parsing feed: $e');
+            logger.w('Error parsing feed as Atom', error: e);
             return [];
           }
         }
       }
       return [];
     } catch (e) {
-      print('Error fetching episodes: $e');
+      logger.e('Error fetching episodes', error: e);
       return [];
     }
   }

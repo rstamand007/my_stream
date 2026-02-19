@@ -33,7 +33,6 @@ class MyStreamApp extends StatelessWidget {
             primary: AppColors.primary,
             secondary: AppColors.secondary,
             surface: AppColors.surface,
-            background: AppColors.background,
           ),
           scaffoldBackgroundColor: AppColors.background,
           appBarTheme: const AppBarTheme(

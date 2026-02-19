@@ -29,7 +29,7 @@ class EpisodeTile extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           decoration: BoxDecoration(
             color: isCurrentEpisode
-                ? AppColors.primary.withOpacity(0.1)
+                ? AppColors.primary.withValues(alpha: 0.1)
                 : AppColors.surface,
             borderRadius: BorderRadius.circular(12),
           ),

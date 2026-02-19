@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import '../models/episode.dart';
 import '../services/download_service.dart';
 import '../services/database_service.dart';
+import '../utils/logger.dart';
 
 class DownloadProvider with ChangeNotifier {
   final DownloadService _downloadService = DownloadService.instance;
   final DatabaseService _db = DatabaseService.instance;
 
   List<Episode> _downloadedEpisodes = [];
-  Map<String, double> _downloadProgress = {};
+  final Map<String, double> _downloadProgress = {};
 
   // Getters
   List<Episode> get downloadedEpisodes => _downloadedEpisodes;
@@ -36,7 +37,7 @@ class DownloadProvider with ChangeNotifier {
       _downloadedEpisodes = await _db.getDownloadedEpisodes();
       notifyListeners();
     } catch (e) {
-      print('Error loading downloaded episodes: $e');
+      logger.e('Error loading downloaded episodes', error: e);
     }
   }
 
@@ -65,7 +66,7 @@ class DownloadProvider with ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      print('Error downloading episode: $e');
+      logger.e('Error downloading episode', error: e);
       _downloadProgress.remove(episode.id);
       notifyListeners();
     }
@@ -92,7 +93,7 @@ class DownloadProvider with ChangeNotifier {
         }
       }
     } catch (e) {
-      print('Error deleting download: $e');
+      logger.e('Error deleting download', error: e);
     }
   }
 
@@ -117,7 +118,7 @@ class DownloadProvider with ChangeNotifier {
 
       await loadDownloadedEpisodes();
     } catch (e) {
-      print('Error clearing downloads: $e');
+      logger.e('Error clearing downloads', error: e);
     }
   }
 }

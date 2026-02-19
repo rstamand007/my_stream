@@ -1,6 +1,7 @@
 import 'package:just_audio/just_audio.dart';
 import '../models/episode.dart';
 import '../utils/constants.dart';
+import '../utils/logger.dart';
 
 class AudioPlayerService {
   static final AudioPlayerService instance = AudioPlayerService._internal();
@@ -34,7 +35,7 @@ class AudioPlayerService {
         return null;
       });
     } catch (e) {
-      print('Error initializing audio player: $e');
+      logger.e('Error initializing audio player', error: e);
     }
   }
 
@@ -57,7 +58,7 @@ class AudioPlayerService {
       // Start playback
       await _player.play();
     } catch (e) {
-      print('Error playing episode: $e');
+      logger.e('Error playing episode', error: e);
       rethrow;
     }
   }
