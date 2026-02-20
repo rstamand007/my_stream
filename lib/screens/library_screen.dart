@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_stream/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../providers/podcast_provider.dart';
 import '../widgets/podcast_card.dart';
@@ -10,11 +11,13 @@ class LibraryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'My Library',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+        title: Text(
+          l10n.myLibrary,
+          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
@@ -36,19 +39,19 @@ class LibraryScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.library_music_outlined,
                     size: 80,
                     color: AppColors.textSecondary,
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'No podcasts yet',
+                    l10n.noPodcasts,
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Search for podcasts to get started',
+                    l10n.searchToStart,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],

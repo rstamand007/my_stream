@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_stream/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../providers/download_provider.dart';
 import '../widgets/episode_tile.dart';
@@ -10,11 +11,13 @@ class DownloadsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Downloads',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+        title: Text(
+          l10n.downloads,
+          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
         ),
         actions: [
           Consumer<DownloadProvider>(
@@ -26,11 +29,11 @@ class DownloadsScreen extends StatelessWidget {
               return PopupMenuButton(
                 itemBuilder: (context) => [
                   PopupMenuItem(
-                    child: const Text('Clear all downloads'),
+                    child: Text(l10n.clearAllDownloads),
                     onTap: () {
                       Future.delayed(Duration.zero, () {
                         if (!context.mounted) return;
-                        _showClearDialog(context);
+                        _showClearDialog(context, l10n);
                       });
                     },
                   ),
@@ -47,19 +50,19 @@ class DownloadsScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.download_outlined,
                     size: 80,
                     color: AppColors.textSecondary,
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'No downloads yet',
+                    l10n.noDownloads,
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Downloaded episodes appear here',
+                    l10n.downloadedAppearHere,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
@@ -128,27 +131,25 @@ class DownloadsScreen extends StatelessWidget {
     );
   }
 
-  void _showClearDialog(BuildContext context) {
+  void _showClearDialog(BuildContext context, AppLocalizations l10n) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Clear All Downloads'),
-        content: const Text(
-          'Are you sure you want to delete all downloaded episodes? This cannot be undone.',
-        ),
+        title: Text(l10n.clearDownloadsTitle),
+        content: Text(l10n.clearDownloadsConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () {
               context.read<DownloadProvider>().clearAllDownloads();
               Navigator.pop(context);
             },
-            child: const Text(
-              'Clear All',
-              style: TextStyle(color: AppColors.error),
+            child: Text(
+              l10n.clearAll,
+              style: const TextStyle(color: AppColors.error),
             ),
           ),
         ],

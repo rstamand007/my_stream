@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_stream/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../providers/player_provider.dart';
 import '../utils/constants.dart';
@@ -16,9 +17,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Now Playing'),
+        title: Text(l10n.nowPlaying),
         actions: [
           Consumer<PlayerProvider>(
             builder: (context, provider, child) {
@@ -56,7 +59,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       body: Consumer<PlayerProvider>(
         builder: (context, provider, child) {
           if (!provider.hasEpisode) {
-            return const Center(child: Text('No episode playing'));
+            return Center(child: Text(l10n.noEpisodePlaying));
           }
 
           final episode = provider.currentEpisode!;
@@ -164,7 +167,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.podcasts, size: 40),
+                      icon: const Icon(Icons.replay_10_rounded, size: 40),
                       iconSize: 36,
                       onPressed: provider.skipBackward,
                       color: AppColors.textPrimary,

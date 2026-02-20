@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:my_stream/l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
+import '../providers/locale_provider.dart';
 import '../utils/constants.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -6,38 +9,41 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final localeProvider = context.watch<LocaleProvider>();
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Settings',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+        title: Text(
+          l10n.settings,
+          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
         ),
       ),
       body: ListView(
         children: [
           _buildSection(
             context,
-            title: 'Playback',
+            title: l10n.playback,
             children: [
               _buildSettingTile(
                 context,
                 icon: Icons.speed_rounded,
-                title: 'Default Playback Speed',
+                title: l10n.playbackSpeed,
                 subtitle: '1.0x',
                 onTap: () {},
               ),
               _buildSettingTile(
                 context,
                 icon: Icons.skip_next_rounded,
-                title: 'Skip Forward',
-                subtitle: '30 seconds',
+                title: l10n.skipForward,
+                subtitle: '30s',
                 onTap: () {},
               ),
               _buildSettingTile(
                 context,
                 icon: Icons.skip_previous_rounded,
-                title: 'Skip Backward',
-                subtitle: '15 seconds',
+                title: l10n.skipBackward,
+                subtitle: '10s',
                 onTap: () {},
               ),
             ],
@@ -45,19 +51,19 @@ class SettingsScreen extends StatelessWidget {
 
           _buildSection(
             context,
-            title: 'Downloads',
+            title: l10n.downloads,
             children: [
               _buildSettingTile(
                 context,
                 icon: Icons.download_rounded,
-                title: 'Auto Download',
-                subtitle: 'Automatically download new episodes',
+                title: l10n.autoDownload,
+                subtitle: l10n.autoDownloadSubtitle,
                 trailing: Switch(value: false, onChanged: (value) {}),
               ),
               _buildSettingTile(
                 context,
                 icon: Icons.high_quality_rounded,
-                title: 'Download Quality',
+                title: l10n.downloadQuality,
                 subtitle: 'High',
                 onTap: () {},
               ),
@@ -66,32 +72,54 @@ class SettingsScreen extends StatelessWidget {
 
           _buildSection(
             context,
-            title: 'Appearance',
+            title: l10n.appearance,
             children: [
               _buildSettingTile(
                 context,
                 icon: Icons.dark_mode_rounded,
-                title: 'Theme',
+                title: l10n.theme,
                 subtitle: 'Dark',
                 onTap: () {},
+              ),
+              _buildSettingTile(
+                context,
+                icon: Icons.language_rounded,
+                title: l10n.language,
+                trailing: DropdownButton<String>(
+                  value: localeProvider.locale?.languageCode ?? 'en',
+                  underline: const SizedBox(),
+                  icon: const Icon(
+                    Icons.arrow_drop_down_rounded,
+                    color: AppColors.primary,
+                  ),
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      localeProvider.setLocale(Locale(newValue));
+                    }
+                  },
+                  items: [
+                    DropdownMenuItem(value: 'en', child: Text(l10n.english)),
+                    DropdownMenuItem(value: 'fr', child: Text(l10n.french)),
+                  ],
+                ),
               ),
             ],
           ),
 
           _buildSection(
             context,
-            title: 'About',
+            title: l10n.about,
             children: [
               _buildSettingTile(
                 context,
                 icon: Icons.info_outline_rounded,
-                title: 'Version',
+                title: l10n.version,
                 subtitle: '1.0.0',
               ),
               _buildSettingTile(
                 context,
                 icon: Icons.code_rounded,
-                title: 'Open Source Licenses',
+                title: l10n.licenses,
                 onTap: () {
                   showLicensePage(context: context);
                 },

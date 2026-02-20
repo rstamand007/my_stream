@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_stream/l10n/app_localizations.dart';
 import 'library_screen.dart';
 import 'search_screen.dart';
 import 'downloads_screen.dart';
@@ -25,6 +26,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -52,22 +55,22 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 _buildNavItem(
                   icon: Icons.library_music_rounded,
-                  label: 'Library',
+                  label: l10n.library,
                   index: 0,
                 ),
                 _buildNavItem(
                   icon: Icons.search_rounded,
-                  label: 'Search',
+                  label: l10n.search,
                   index: 1,
                 ),
                 _buildNavItem(
                   icon: Icons.download_rounded,
-                  label: 'Downloads',
+                  label: l10n.downloads,
                   index: 2,
                 ),
                 _buildNavItem(
                   icon: Icons.settings_rounded,
-                  label: 'Settings',
+                  label: l10n.settings,
                   index: 3,
                 ),
               ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_stream/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/podcast.dart';
@@ -36,6 +37,8 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -119,11 +122,11 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
                           },
                           icon: Icon(
                             isSubscribed
-                                ? Icons.replay_10_rounded
+                                ? Icons.check_rounded
                                 : Icons.add_circle_outline_rounded,
                           ),
                           label: Text(
-                            isSubscribed ? 'Subscribed' : 'Subscribe',
+                            isSubscribed ? l10n.subscribed : l10n.subscribe,
                             style: const TextStyle(fontSize: 16),
                           ),
                           style: ElevatedButton.styleFrom(
@@ -146,7 +149,7 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
                   // Description
                   if (widget.podcast.description.isNotEmpty) ...[
                     Text(
-                      'About',
+                      l10n.about,
                       style: Theme.of(
                         context,
                       ).textTheme.headlineMedium?.copyWith(fontSize: 18),
@@ -160,7 +163,7 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
                   ],
 
                   Text(
-                    'Episodes',
+                    l10n.episodes,
                     style: Theme.of(
                       context,
                     ).textTheme.headlineMedium?.copyWith(fontSize: 18),
@@ -185,7 +188,7 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
                 return SliverFillRemaining(
                   child: Center(
                     child: Text(
-                      'No episodes available',
+                      l10n.noEpisodes,
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),

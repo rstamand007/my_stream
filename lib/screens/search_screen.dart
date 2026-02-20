@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_stream/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import '../providers/podcast_provider.dart';
@@ -33,11 +34,13 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Search Podcasts',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+        title: Text(
+          l10n.searchPodcasts,
+          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
         ),
       ),
       body: Column(
@@ -49,7 +52,7 @@ class _SearchScreenState extends State<SearchScreen> {
               controller: _searchController,
               onChanged: _onSearchChanged,
               decoration: InputDecoration(
-                hintText: 'Search for podcasts...',
+                hintText: l10n.searchHint,
                 prefixIcon: const Icon(Icons.search_rounded),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
@@ -83,19 +86,19 @@ class _SearchScreenState extends State<SearchScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.search_rounded,
                           size: 80,
                           color: AppColors.textSecondary,
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Search for podcasts',
+                          l10n.searchPodcasts,
                           style: Theme.of(context).textTheme.headlineMedium,
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Find your favorite shows',
+                          l10n.findShows,
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ],
@@ -108,19 +111,19 @@ class _SearchScreenState extends State<SearchScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.search_off_rounded,
                           size: 80,
                           color: AppColors.textSecondary,
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No results found',
+                          l10n.noResults,
                           style: Theme.of(context).textTheme.headlineMedium,
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Try a different search term',
+                          l10n.tryDifferentSearch,
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ],

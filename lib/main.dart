@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:my_stream/l10n/app_localizations.dart';
 import 'providers/podcast_provider.dart';
 import 'providers/player_provider.dart';
 import 'providers/download_provider.dart';
+import 'providers/locale_provider.dart';
 import 'screens/home_screen.dart';
 import 'utils/constants.dart';
 
@@ -31,47 +34,66 @@ class MyStreamApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PodcastProvider()..init()),
         ChangeNotifierProvider(create: (_) => PlayerProvider()..init()),
         ChangeNotifierProvider(create: (_) => DownloadProvider()..init()),
+        ChangeNotifierProvider(create: (_) => LocaleProvider()),
       ],
-      child: MaterialApp(
-        title: 'MyStream',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          useMaterial3: true,
-          brightness: Brightness.dark,
-          colorScheme: ColorScheme.dark(
-            primary: AppColors.primary,
-            secondary: AppColors.secondary,
-            surface: AppColors.surface,
-          ),
-          scaffoldBackgroundColor: AppColors.background,
-          appBarTheme: const AppBarTheme(
-            backgroundColor: AppColors.background,
-            elevation: 0,
-          ),
-          cardTheme: const CardThemeData(
-            color: AppColors.surface,
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
+      child: Consumer<LocaleProvider>(
+        builder: (context, localeProvider, child) {
+          return MaterialApp(
+            title: 'MyStream',
+            debugShowCheckedModeBanner: false,
+            locale: localeProvider.locale,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [Locale('en'), Locale('fr')],
+            theme: ThemeData(
+              useMaterial3: true,
+              brightness: Brightness.dark,
+              colorScheme: ColorScheme.dark(
+                primary: AppColors.primary,
+                secondary: AppColors.secondary,
+                surface: AppColors.surface,
+              ),
+              scaffoldBackgroundColor: AppColors.background,
+              appBarTheme: const AppBarTheme(
+                backgroundColor: AppColors.background,
+                elevation: 0,
+              ),
+              cardTheme: const CardThemeData(
+                color: AppColors.surface,
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                ),
+              ),
+              textTheme: const TextTheme(
+                headlineLarge: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
+                headlineMedium: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+                bodyLarge: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 16,
+                ),
+                bodyMedium: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                ),
+              ),
+              iconTheme: const IconThemeData(color: AppColors.textPrimary),
             ),
-          ),
-          textTheme: const TextTheme(
-            headlineLarge: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-            ),
-            headlineMedium: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-            bodyLarge: TextStyle(color: AppColors.textPrimary, fontSize: 16),
-            bodyMedium: TextStyle(color: AppColors.textSecondary, fontSize: 14),
-          ),
-          iconTheme: const IconThemeData(color: AppColors.textPrimary),
-        ),
-        home: const HomeScreen(),
+            home: const HomeScreen(),
+          );
+        },
       ),
     );
   }
