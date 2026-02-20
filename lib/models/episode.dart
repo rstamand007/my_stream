@@ -1,13 +1,28 @@
+import 'package:hive/hive.dart';
+
+part 'episode.g.dart';
+
+@HiveType(typeId: 1)
 class Episode {
+  @HiveField(0)
   final String id;
+  @HiveField(1)
   final String podcastId;
+  @HiveField(2)
   final String title;
+  @HiveField(3)
   final String description;
+  @HiveField(4)
   final String audioUrl;
+  @HiveField(5)
   final int duration; // in seconds
+  @HiveField(6)
   final DateTime publishDate;
+  @HiveField(7)
   final bool isDownloaded;
+  @HiveField(8)
   final String? localFilePath;
+  @HiveField(9)
   final int? playbackPosition; // in seconds
 
   Episode({
@@ -32,7 +47,10 @@ class Episode {
       description: rss['description'] ?? '',
       audioUrl: rss['enclosure']?['url'] ?? '',
       duration: _parseDuration(rss['duration']),
-      publishDate: DateTime.tryParse(rss['pubDate'] ?? '') ?? DateTime.now(),
+      publishDate:
+          DateTime.tryParse(rss['pubDate'] ?? '') ??
+          DateTime.tryParse(rss['pubDate']?.replaceFirst(' +0000', '') ?? '') ??
+          DateTime.now(),
     );
   }
 

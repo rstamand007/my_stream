@@ -10,6 +10,14 @@ import '../utils/logger.dart';
 class PodcastApiService {
   final _search = ps.Search();
 
+  // Headers for HTTP requests
+  static const Map<String, String> _headers = {
+    'User-Agent':
+        'MyStreamPodcastPlayer/1.0.0 (https://github.com/rstamand007/my_stream)',
+    'Accept':
+        'application/xml, application/rss+xml, application/atom+xml, application/json, text/xml',
+  };
+
   // Search for podcasts using iTunes API
   Future<List<Podcast>> searchPodcasts(String query) async {
     try {
@@ -45,9 +53,15 @@ class PodcastApiService {
   Future<Podcast?> getPodcastById(String id) async {
     try {
       final url = Uri.parse('${ApiConstants.itunesLookupUrl}?id=$id');
-      final response = await http.get(url);
+      final response = await http
+          .get(url, headers: _headers)
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
+        if (response.body.isEmpty) {
+          logger.w('Empty response body from $url');
+          return null;
+        }
         final data = json.decode(response.body);
         if (data['resultCount'] > 0) {
           return Podcast.fromJson(data['results'][0]);
@@ -55,7 +69,7 @@ class PodcastApiService {
       }
       return null;
     } catch (e) {
-      logger.e('Error fetching podcast', error: e);
+      logger.e('Error fetching podcast ID: $id', error: e);
       return null;
     }
   }
@@ -63,9 +77,21 @@ class PodcastApiService {
   // Fetch episodes from podcast RSS feed
   Future<List<Episode>> fetchEpisodes(String feedUrl, String podcastId) async {
     try {
-      final response = await http.get(Uri.parse(feedUrl));
+      if (feedUrl.isEmpty) {
+        logger.w('Empty feed URL for podcast ID: $podcastId');
+        return [];
+      }
+
+      final response = await http
+          .get(Uri.parse(feedUrl), headers: _headers)
+          .timeout(const Duration(seconds: 20));
 
       if (response.statusCode == 200) {
+        if (response.body.trim().isEmpty) {
+          logger.w('Empty response body for feed: $feedUrl');
+          return [];
+        }
+
         // Try parsing as RSS first
         try {
           final feed = RssFeed.parse(response.body);
@@ -76,14 +102,18 @@ class PodcastApiService {
             final feed = AtomFeed.parse(response.body);
             return _parseAtomEpisodes(feed, podcastId);
           } catch (e) {
-            logger.w('Error parsing feed as Atom', error: e);
+            logger.e('Error parsing feed as RSS or Atom: $feedUrl', error: e);
             return [];
           }
         }
+      } else {
+        logger.w(
+          'Failed to fetch episodes from $feedUrl. Status: ${response.statusCode}',
+        );
       }
       return [];
     } catch (e) {
-      logger.e('Error fetching episodes', error: e);
+      logger.e('Error fetching episodes from $feedUrl', error: e);
       return [];
     }
   }

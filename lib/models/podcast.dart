@@ -1,10 +1,22 @@
+import 'package:hive/hive.dart';
+
+part 'podcast.g.dart';
+
+@HiveType(typeId: 0)
 class Podcast {
+  @HiveField(0)
   final String id;
+  @HiveField(1)
   final String title;
+  @HiveField(2)
   final String author;
+  @HiveField(3)
   final String description;
+  @HiveField(4)
   final String artworkUrl;
+  @HiveField(5)
   final String feedUrl;
+  @HiveField(6)
   final bool isSubscribed;
 
   Podcast({

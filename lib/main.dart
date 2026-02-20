@@ -6,8 +6,17 @@ import 'providers/download_provider.dart';
 import 'screens/home_screen.dart';
 import 'utils/constants.dart';
 
+import 'package:hive_flutter/hive_flutter.dart';
+import 'services/database_service.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Hive
+  await Hive.initFlutter();
+
+  // Initialize Database Service
+  await DatabaseService.instance.init();
 
   runApp(const MyStreamApp());
 }
