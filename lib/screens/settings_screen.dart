@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:my_stream/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../providers/locale_provider.dart';
+import '../providers/theme_provider.dart';
 import '../utils/constants.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -11,6 +12,7 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final localeProvider = context.watch<LocaleProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -76,10 +78,35 @@ class SettingsScreen extends StatelessWidget {
             children: [
               _buildSettingTile(
                 context,
-                icon: Icons.dark_mode_rounded,
+                icon: Icons.palette_rounded,
                 title: l10n.theme,
-                subtitle: 'Dark',
-                onTap: () {},
+                trailing: DropdownButton<ThemeMode>(
+                  value: themeProvider.themeMode,
+                  underline: const SizedBox(),
+                  icon: const Icon(
+                    Icons.arrow_drop_down_rounded,
+                    color: AppColors.primary,
+                  ),
+                  onChanged: (ThemeMode? newValue) {
+                    if (newValue != null) {
+                      themeProvider.setThemeMode(newValue);
+                    }
+                  },
+                  items: [
+                    DropdownMenuItem(
+                      value: ThemeMode.system,
+                      child: Text(l10n.themeSystem),
+                    ),
+                    DropdownMenuItem(
+                      value: ThemeMode.light,
+                      child: Text(l10n.themeLight),
+                    ),
+                    DropdownMenuItem(
+                      value: ThemeMode.dark,
+                      child: Text(l10n.themeDark),
+                    ),
+                  ],
+                ),
               ),
               _buildSettingTile(
                 context,

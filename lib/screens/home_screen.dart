@@ -29,54 +29,57 @@ class _HomeScreenState extends State<HomeScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      body: Stack(
+      body: _screens[_currentIndex],
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          _screens[_currentIndex],
-          // Mini player at bottom
-          const Positioned(left: 0, right: 0, bottom: 0, child: MiniPlayer()),
-        ],
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 8,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(
-                  icon: Icons.library_music_rounded,
-                  label: l10n.library,
-                  index: 0,
-                ),
-                _buildNavItem(
-                  icon: Icons.search_rounded,
-                  label: l10n.search,
-                  index: 1,
-                ),
-                _buildNavItem(
-                  icon: Icons.download_rounded,
-                  label: l10n.downloads,
-                  index: 2,
-                ),
-                _buildNavItem(
-                  icon: Icons.settings_rounded,
-                  label: l10n.settings,
-                  index: 3,
+          const MiniPlayer(),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, -2),
                 ),
               ],
             ),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildNavItem(
+                      icon: Icons.library_music_rounded,
+                      label: l10n.library,
+                      index: 0,
+                    ),
+                    _buildNavItem(
+                      icon: Icons.search_rounded,
+                      label: l10n.search,
+                      index: 1,
+                    ),
+                    _buildNavItem(
+                      icon: Icons.download_rounded,
+                      label: l10n.downloads,
+                      index: 2,
+                    ),
+                    _buildNavItem(
+                      icon: Icons.settings_rounded,
+                      label: l10n.settings,
+                      index: 3,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

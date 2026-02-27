@@ -30,7 +30,7 @@ class EpisodeTile extends StatelessWidget {
           decoration: BoxDecoration(
             color: isCurrentEpisode
                 ? AppColors.primary.withValues(alpha: 0.1)
-                : AppColors.surface,
+                : Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(12),
           ),
           child: ListTile(
@@ -44,7 +44,7 @@ class EpisodeTile extends StatelessWidget {
               style: TextStyle(
                 color: isCurrentEpisode
                     ? AppColors.primary
-                    : AppColors.textPrimary,
+                    : Theme.of(context).textTheme.bodyLarge?.color,
                 fontWeight: isCurrentEpisode
                     ? FontWeight.bold
                     : FontWeight.normal,
@@ -58,10 +58,7 @@ class EpisodeTile extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   '${Formatters.formatDate(episode.publishDate)} • ${Formatters.formatDuration(episode.duration)}',
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 12,
-                  ),
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
                 if (isDownloading) ...[
                   const SizedBox(height: 8),
@@ -140,7 +137,9 @@ class EpisodeTile extends StatelessWidget {
     return IconButton(
       icon: Icon(
         isDownloaded ? Icons.download_done_rounded : Icons.download_rounded,
-        color: isDownloaded ? AppColors.success : AppColors.textSecondary,
+        color: isDownloaded
+            ? AppColors.success
+            : Theme.of(context).iconTheme.color,
       ),
       onPressed: () {
         if (isDownloaded) {

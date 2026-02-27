@@ -27,9 +27,8 @@ class MiniPlayer extends StatelessWidget {
           },
           child: Container(
             height: 80,
-            margin: const EdgeInsets.only(bottom: 80), // Account for nav bar
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: Theme.of(context).cardColor,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.3),
@@ -63,21 +62,18 @@ class MiniPlayer extends StatelessWidget {
                             children: [
                               Text(
                                 episode.title,
-                                style: const TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: Theme.of(context).textTheme.bodyLarge
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                    ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 '${Formatters.formatDuration(provider.position.inSeconds)} / ${Formatters.formatDuration(provider.duration.inSeconds)}',
-                                style: const TextStyle(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 12,
-                                ),
+                                style: Theme.of(context).textTheme.bodyMedium,
                               ),
                             ],
                           ),
@@ -90,7 +86,6 @@ class MiniPlayer extends StatelessWidget {
                             IconButton(
                               icon: const Icon(Icons.replay_10_rounded),
                               onPressed: provider.skipBackward,
-                              color: AppColors.textPrimary,
                             ),
                             Container(
                               decoration: const BoxDecoration(
@@ -110,7 +105,6 @@ class MiniPlayer extends StatelessWidget {
                             IconButton(
                               icon: const Icon(Icons.forward_30_rounded),
                               onPressed: provider.skipForward,
-                              color: AppColors.textPrimary,
                             ),
                           ],
                         ),

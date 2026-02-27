@@ -28,7 +28,8 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
 
   Future<void> _loadEpisodes() async {
     final provider = context.read<PodcastProvider>();
-    if (widget.podcast.isSubscribed) {
+    final isSubscribed = provider.isPodcastSubscribed(widget.podcast.id);
+    if (isSubscribed) {
       await provider.loadEpisodes(widget.podcast.id);
     } else {
       await provider.fetchEpisodes(widget.podcast.id, widget.podcast.feedUrl);
@@ -70,8 +71,10 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          AppColors.background.withValues(alpha: 0.7),
-                          AppColors.background,
+                          Theme.of(
+                            context,
+                          ).scaffoldBackgroundColor.withValues(alpha: 0.7),
+                          Theme.of(context).scaffoldBackgroundColor,
                         ],
                       ),
                     ),
@@ -102,7 +105,9 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
                   // Subscribe button
                   Consumer<PodcastProvider>(
                     builder: (context, provider, child) {
-                      final isSubscribed = widget.podcast.isSubscribed;
+                      final isSubscribed = provider.isPodcastSubscribed(
+                        widget.podcast.id,
+                      );
 
                       return SizedBox(
                         width: double.infinity,
@@ -112,12 +117,8 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
                               await provider.unsubscribeFromPodcast(
                                 widget.podcast.id,
                               );
-                              if (context.mounted) {
-                                Navigator.pop(context);
-                              }
                             } else {
                               await provider.subscribeToPodcast(widget.podcast);
-                              setState(() {});
                             }
                           },
                           icon: Icon(

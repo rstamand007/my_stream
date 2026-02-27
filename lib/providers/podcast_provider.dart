@@ -147,6 +147,11 @@ class PodcastProvider with ChangeNotifier {
   }
 
   // Check if podcast is subscribed
+  bool isPodcastSubscribed(String podcastId) {
+    return _subscribedPodcasts.any((p) => p.id == podcastId);
+  }
+
+  // Check if podcast is subscribed (async)
   Future<bool> isSubscribed(String podcastId) async {
     final podcast = await _db.getPodcast(podcastId);
     return podcast?.isSubscribed ?? false;

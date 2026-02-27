@@ -6,6 +6,7 @@ import 'providers/podcast_provider.dart';
 import 'providers/player_provider.dart';
 import 'providers/download_provider.dart';
 import 'providers/locale_provider.dart';
+import 'providers/theme_provider.dart';
 import 'screens/home_screen.dart';
 import 'utils/constants.dart';
 
@@ -35,13 +36,15 @@ class MyStreamApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PlayerProvider()..init()),
         ChangeNotifierProvider(create: (_) => DownloadProvider()..init()),
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
-      child: Consumer<LocaleProvider>(
-        builder: (context, localeProvider, child) {
+      child: Consumer2<LocaleProvider, ThemeProvider>(
+        builder: (context, localeProvider, themeProvider, child) {
           return MaterialApp(
             title: 'MyStream',
             debugShowCheckedModeBanner: false,
             locale: localeProvider.locale,
+            themeMode: themeProvider.themeMode,
             localizationsDelegates: const [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
@@ -49,7 +52,39 @@ class MyStreamApp extends StatelessWidget {
               GlobalCupertinoLocalizations.delegate,
             ],
             supportedLocales: const [Locale('en'), Locale('fr')],
+            // Light Theme
             theme: ThemeData(
+              useMaterial3: true,
+              brightness: Brightness.light,
+              colorScheme: ColorScheme.light(
+                primary: AppColors.primary,
+                secondary: AppColors.secondary,
+                surface: Colors.white,
+              ),
+              scaffoldBackgroundColor: Colors.grey[50],
+              appBarTheme: const AppBarTheme(
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.black87,
+                elevation: 0,
+              ),
+              textTheme: const TextTheme(
+                headlineLarge: TextStyle(
+                  color: Colors.black87,
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
+                headlineMedium: TextStyle(
+                  color: Colors.black87,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+                bodyLarge: TextStyle(color: Colors.black87, fontSize: 16),
+                bodyMedium: TextStyle(color: Colors.black54, fontSize: 14),
+              ),
+              iconTheme: const IconThemeData(color: Colors.black87),
+            ),
+            // Dark Theme
+            darkTheme: ThemeData(
               useMaterial3: true,
               brightness: Brightness.dark,
               colorScheme: ColorScheme.dark(

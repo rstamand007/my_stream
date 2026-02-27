@@ -43,5 +43,8 @@
   "licenses": "Open Source Licenses",
   "language": "Language",
   "english": "English",
-  "french": "French"
+  "french": "French",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themeSystem": "System"
 }
