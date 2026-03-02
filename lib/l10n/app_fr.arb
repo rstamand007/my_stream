@@ -45,5 +45,8 @@
   "themeDark": "Sombre",
   "themeSystem": "Système",
   "refresh": "Actualiser",
-  "lastUpdated": "Dernière mise à jour : {date}"
+  "lastUpdated": "Dernière mise à jour : {date}",
+  "addFiles": "Ajouter des fichiers",
+  "addFolder": "Ajouter un dossier",
+  "localFile": "Fichier local"
 }

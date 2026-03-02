@@ -151,4 +151,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String lastUpdated(Object date) {
     return 'Last updated: $date';
   }
+
+  @override
+  String get addFiles => 'Add Files';
+
+  @override
+  String get addFolder => 'Add Folder';
+
+  @override
+  String get localFile => 'Local File';
 }

@@ -47,7 +47,11 @@ class AudioPlayerService {
       _currentEpisode = episode;
 
       // Set audio source
-      await _player.setUrl(finalUrl);
+      if (finalUrl.startsWith('http')) {
+        await _player.setUrl(finalUrl);
+      } else {
+        await _player.setAudioSource(AudioSource.uri(Uri.file(finalUrl)));
+      }
 
       // Seek to saved position if available
       if (startPosition != null) {

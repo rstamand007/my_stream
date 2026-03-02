@@ -379,6 +379,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Last updated: {date}'**
   String lastUpdated(Object date);
+
+  /// No description provided for @addFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Files'**
+  String get addFiles;
+
+  /// No description provided for @addFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Folder'**
+  String get addFolder;
+
+  /// No description provided for @localFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Local File'**
+  String get localFile;
 }
 
 class _AppLocalizationsDelegate

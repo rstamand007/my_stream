@@ -20,6 +20,17 @@ class DownloadsScreen extends StatelessWidget {
           style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.note_add_rounded),
+            tooltip: l10n.addFiles,
+            onPressed: () => context.read<DownloadProvider>().pickLocalFiles(),
+          ),
+          IconButton(
+            icon: const Icon(Icons.create_new_folder_rounded),
+            tooltip: l10n.addFolder,
+            onPressed: () =>
+                context.read<DownloadProvider>().pickLocalDirectory(),
+          ),
           Consumer<DownloadProvider>(
             builder: (context, provider, child) {
               if (provider.downloadedEpisodes.isEmpty) {

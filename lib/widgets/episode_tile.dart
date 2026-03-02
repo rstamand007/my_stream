@@ -5,6 +5,7 @@ import '../providers/player_provider.dart';
 import '../providers/download_provider.dart';
 import '../utils/constants.dart';
 import '../utils/formatters.dart';
+import 'package:my_stream/l10n/app_localizations.dart';
 import '../screens/now_playing_screen.dart';
 
 class EpisodeTile extends StatelessWidget {
@@ -57,7 +58,9 @@ class EpisodeTile extends StatelessWidget {
               children: [
                 const SizedBox(height: 4),
                 Text(
-                  '${Formatters.formatDate(episode.publishDate)} • ${Formatters.formatDuration(episode.duration)}',
+                  episode.podcastId == 'local'
+                      ? '${AppLocalizations.of(context)!.localFile} • ${Formatters.formatDuration(episode.duration)}'
+                      : '${Formatters.formatDate(episode.publishDate)} • ${Formatters.formatDuration(episode.duration)}',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 if (isDownloading) ...[

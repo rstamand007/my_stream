@@ -1,4 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path/path.dart' as path;
 import '../models/episode.dart';
 import '../services/download_service.dart';
 import '../services/database_service.dart';
@@ -120,5 +123,72 @@ class DownloadProvider with ChangeNotifier {
     } catch (e) {
       logger.e('Error clearing downloads', error: e);
     }
+  }
+
+  // Pick local files
+  Future<void> pickLocalFiles() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.audio,
+        allowMultiple: true,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        for (var file in result.files) {
+          if (file.path != null) {
+            await _addLocalFile(file.path!, file.name);
+          }
+        }
+        await loadDownloadedEpisodes();
+      }
+    } catch (e) {
+      logger.e('Error picking local files', error: e);
+    }
+  }
+
+  // Pick local directory
+  Future<void> pickLocalDirectory() async {
+    try {
+      final String? selectedDirectory = await FilePicker.platform
+          .getDirectoryPath();
+
+      if (selectedDirectory != null) {
+        final directory = Directory(selectedDirectory);
+        final List<FileSystemEntity> entities = await directory.list().toList();
+
+        for (var entity in entities) {
+          if (entity is File && _isAudioFile(entity.path)) {
+            await _addLocalFile(entity.path, path.basename(entity.path));
+          }
+        }
+        await loadDownloadedEpisodes();
+      }
+    } catch (e) {
+      logger.e('Error picking local directory', error: e);
+    }
+  }
+
+  // Helper to add local file as an episode
+  Future<void> _addLocalFile(String filePath, String fileName) async {
+    final episode = Episode(
+      id: 'local_${DateTime.now().microsecondsSinceEpoch}_${fileName.hashCode}',
+      podcastId: 'local',
+      title: fileName,
+      description: 'Local file from: $filePath',
+      audioUrl: '', // Remote URL is empty for local files
+      duration:
+          0, // We could potentially extract this, but 0 is a safe default for now
+      publishDate: DateTime.now(),
+      isDownloaded: true,
+      localFilePath: filePath,
+    );
+
+    await _db.insertEpisode(episode);
+  }
+
+  // Helper to check if file is audio
+  bool _isAudioFile(String filePath) {
+    final ext = path.extension(filePath).toLowerCase();
+    return ['.mp3', '.m4a', '.wav', '.ogg', '.flac'].contains(ext);
   }
 }

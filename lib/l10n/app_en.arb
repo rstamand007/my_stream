@@ -48,5 +48,8 @@
   "themeDark": "Dark",
   "themeSystem": "System",
   "refresh": "Refresh",
-  "lastUpdated": "Last updated: {date}"
+  "lastUpdated": "Last updated: {date}",
+  "addFiles": "Add Files",
+  "addFolder": "Add Folder",
+  "localFile": "Local File"
 }
