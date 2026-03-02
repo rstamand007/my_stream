@@ -46,7 +46,7 @@ class Episode {
       title: rss['title'] ?? 'Untitled Episode',
       description: rss['description'] ?? '',
       audioUrl: rss['enclosure']?['url'] ?? '',
-      duration: _parseDuration(rss['duration']),
+      duration: parseDuration(rss['duration']),
       publishDate:
           DateTime.tryParse(rss['pubDate'] ?? '') ??
           DateTime.tryParse(rss['pubDate']?.replaceFirst(' +0000', '') ?? '') ??
@@ -114,7 +114,7 @@ class Episode {
   }
 
   // Helper method to parse duration from various formats
-  static int _parseDuration(dynamic duration) {
+  static int parseDuration(dynamic duration) {
     if (duration == null) return 0;
     if (duration is int) return duration;
     if (duration is String) {

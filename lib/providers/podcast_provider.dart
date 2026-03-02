@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:podcast_search/podcast_search.dart' as ps;
 import '../models/podcast.dart';
 import '../models/episode.dart';
 import '../services/database_service.dart';
@@ -48,7 +49,12 @@ class PodcastProvider with ChangeNotifier {
   }
 
   // Search podcasts
-  Future<void> searchPodcasts(String query) async {
+  Future<void> searchPodcasts(
+    String query, {
+    ps.Country? country,
+    ps.Attribute? attribute,
+    String? language,
+  }) async {
     if (query.isEmpty) {
       _searchResults = [];
       notifyListeners();
@@ -59,7 +65,12 @@ class PodcastProvider with ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
-      _searchResults = await _api.searchPodcasts(query);
+      _searchResults = await _api.searchPodcasts(
+        query,
+        country: country,
+        attribute: attribute,
+        language: language,
+      );
 
       // Check which podcasts are already subscribed
       for (var i = 0; i < _searchResults.length; i++) {
@@ -144,6 +155,14 @@ class PodcastProvider with ChangeNotifier {
   // Refresh episodes for a podcast
   Future<void> refreshEpisodes(String podcastId, String feedUrl) async {
     await fetchEpisodes(podcastId, feedUrl);
+
+    // Update last update time
+    final podcast = await _db.getPodcast(podcastId);
+    if (podcast != null) {
+      final updatedPodcast = podcast.copyWith(lastUpdatedAt: DateTime.now());
+      await _db.updatePodcast(updatedPodcast);
+      await loadSubscribedPodcasts();
+    }
   }
 
   // Check if podcast is subscribed

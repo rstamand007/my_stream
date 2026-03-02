@@ -46,5 +46,7 @@
   "french": "French",
   "themeLight": "Light",
   "themeDark": "Dark",
-  "themeSystem": "System"
+  "themeSystem": "System",
+  "refresh": "Refresh",
+  "lastUpdated": "Last updated: {date}"
 }

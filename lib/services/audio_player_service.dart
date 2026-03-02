@@ -26,26 +26,28 @@ class AudioPlayerService {
 
   // Initialize audio service
   Future<void> init() async {
-    try {
-      // Set up audio session for playback
-      await _player.setAudioSource(AudioSource.uri(Uri.parse(''))).catchError((
-        error,
-      ) {
-        // Ignore initial error
-        return null;
-      });
-    } catch (e) {
-      logger.e('Error initializing audio player', error: e);
-    }
+    // Audio player initialization if needed in the future
   }
 
   // Play episode
   Future<void> playEpisode(Episode episode, {Duration? startPosition}) async {
     try {
+      final String url = episode.playbackUrl;
+      if (url.isEmpty) {
+        throw Exception('Episode has no audio URL');
+      }
+
+      // Encode URL for remote sources to handle special characters
+      final String finalUrl = url.startsWith('http')
+          ? Uri.encodeFull(url)
+          : url;
+
+      logger.d('Playing episode: ${episode.title} from URL: $finalUrl');
+
       _currentEpisode = episode;
 
       // Set audio source
-      await _player.setUrl(episode.playbackUrl);
+      await _player.setUrl(finalUrl);
 
       // Seek to saved position if available
       if (startPosition != null) {
@@ -58,7 +60,7 @@ class AudioPlayerService {
       // Start playback
       await _player.play();
     } catch (e) {
-      logger.e('Error playing episode', error: e);
+      logger.e('Error playing episode: ${episode.title}', error: e);
       rethrow;
     }
   }

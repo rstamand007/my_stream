@@ -143,4 +143,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get themeSystem => 'System';
+
+  @override
+  String get refresh => 'Refresh';
+
+  @override
+  String lastUpdated(Object date) {
+    return 'Last updated: $date';
+  }
 }

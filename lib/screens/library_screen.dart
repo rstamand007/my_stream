@@ -6,8 +6,24 @@ import '../widgets/podcast_card.dart';
 import 'podcast_detail_screen.dart';
 import '../utils/constants.dart';
 
-class LibraryScreen extends StatelessWidget {
+class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
+
+  @override
+  State<LibraryScreen> createState() => _LibraryScreenState();
+}
+
+class _LibraryScreenState extends State<LibraryScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Automatically load podcasts when screen is initialized
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<PodcastProvider>().loadSubscribedPodcasts();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +46,7 @@ class LibraryScreen extends StatelessWidget {
       ),
       body: Consumer<PodcastProvider>(
         builder: (context, provider, child) {
-          if (provider.isLoading) {
+          if (provider.isLoading && provider.subscribedPodcasts.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
 

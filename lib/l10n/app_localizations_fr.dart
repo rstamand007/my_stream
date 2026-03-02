@@ -145,4 +145,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get themeSystem => 'Système';
+
+  @override
+  String get refresh => 'Actualiser';
+
+  @override
+  String lastUpdated(Object date) {
+    return 'Dernière mise à jour : $date';
+  }
 }

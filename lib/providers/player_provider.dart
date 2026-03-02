@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import '../models/episode.dart';
 import '../services/audio_player_service.dart';
 import '../services/database_service.dart';
@@ -13,6 +14,7 @@ class PlayerProvider with ChangeNotifier {
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
   double _speed = 1.0;
+  String? _error;
 
   // Getters
   Episode? get currentEpisode => _currentEpisode;
@@ -20,7 +22,9 @@ class PlayerProvider with ChangeNotifier {
   Duration get position => _position;
   Duration get duration => _duration;
   double get speed => _speed;
+  String? get error => _error;
   bool get hasEpisode => _currentEpisode != null;
+  bool get hasError => _error != null;
 
   double get progress {
     if (_duration.inMilliseconds > 0) {
@@ -39,7 +43,13 @@ class PlayerProvider with ChangeNotifier {
     // Listen to player state changes
     _audioService.playerStateStream.listen((state) {
       _isPlaying = state.playing;
-      notifyListeners();
+
+      // Handle completion: transition to stop state
+      if (state.processingState == ProcessingState.completed) {
+        stop();
+      } else {
+        notifyListeners();
+      }
     });
 
     // Listen to position changes
@@ -71,12 +81,15 @@ class PlayerProvider with ChangeNotifier {
   // Play episode
   Future<void> playEpisode(Episode episode) async {
     try {
+      _error = null;
       _currentEpisode = episode;
       notifyListeners();
 
       await _audioService.playEpisode(episode);
     } catch (e) {
+      _error = 'Failed to play episode: ${e.toString()}';
       logger.e('Error playing episode', error: e);
+      notifyListeners();
     }
   }
 

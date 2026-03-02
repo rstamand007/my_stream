@@ -24,13 +24,14 @@ class PodcastAdapter extends TypeAdapter<Podcast> {
       artworkUrl: fields[4] as String,
       feedUrl: fields[5] as String,
       isSubscribed: fields[6] as bool,
+      lastUpdatedAt: fields[7] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Podcast obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -44,7 +45,9 @@ class PodcastAdapter extends TypeAdapter<Podcast> {
       ..writeByte(5)
       ..write(obj.feedUrl)
       ..writeByte(6)
-      ..write(obj.isSubscribed);
+      ..write(obj.isSubscribed)
+      ..writeByte(7)
+      ..write(obj.lastUpdatedAt);
   }
 
   @override

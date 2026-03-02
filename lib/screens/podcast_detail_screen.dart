@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:my_stream/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -82,6 +83,32 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
                 ],
               ),
             ),
+            actions: [
+              Consumer<PodcastProvider>(
+                builder: (context, provider, child) {
+                  return IconButton(
+                    icon: const Icon(Icons.refresh),
+                    tooltip: l10n.refresh,
+                    onPressed: provider.isLoading
+                        ? null
+                        : () => provider.refreshEpisodes(
+                            widget.podcast.id,
+                            widget.podcast.feedUrl,
+                          ),
+                  );
+                },
+              ),
+            ],
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(4),
+              child: Consumer<PodcastProvider>(
+                builder: (context, provider, child) {
+                  return provider.isLoading
+                      ? const LinearProgressIndicator(minHeight: 4)
+                      : const SizedBox(height: 4);
+                },
+              ),
+            ),
           ),
 
           // Podcast info
@@ -99,6 +126,31 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
                   Text(
                     widget.podcast.author,
                     style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Consumer<PodcastProvider>(
+                    builder: (context, provider, child) {
+                      // Try to get updated podcast from provider (for lastUpdatedAt)
+                      final podcast = provider.subscribedPodcasts.firstWhere(
+                        (p) => p.id == widget.podcast.id,
+                        orElse: () => widget.podcast,
+                      );
+
+                      if (podcast.lastUpdatedAt == null) {
+                        return const SizedBox.shrink();
+                      }
+
+                      final dateStr = DateFormat.yMMMd().add_Hm().format(
+                        podcast.lastUpdatedAt!,
+                      );
+                      return Text(
+                        l10n.lastUpdated(dateStr),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontStyle: FontStyle.italic,
+                          color: Theme.of(context).hintColor,
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 16),
 

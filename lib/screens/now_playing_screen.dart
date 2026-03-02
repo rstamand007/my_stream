@@ -58,6 +58,35 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       ),
       body: Consumer<PlayerProvider>(
         builder: (context, provider, child) {
+          if (provider.hasError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.error_outline_rounded,
+                      size: 60,
+                      color: AppColors.error,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      provider.error!,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: provider.stop,
+                      child: const Text('Dismiss'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
           if (!provider.hasEpisode) {
             return Center(child: Text(l10n.noEpisodePlaying));
           }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_stream/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:podcast_search/podcast_search.dart' as ps;
 import 'dart:async';
 import '../providers/podcast_provider.dart';
 import '../widgets/podcast_card.dart';
@@ -17,6 +18,9 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
+  ps.Country? _selectedCountry;
+  ps.Attribute _selectedAttribute = ps.Attribute.description;
+  String? _selectedLanguage;
 
   @override
   void dispose() {
@@ -28,8 +32,99 @@ class _SearchScreenState extends State<SearchScreen> {
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(AppDurations.searchDebounce, () {
-      context.read<PodcastProvider>().searchPodcasts(query);
+      context.read<PodcastProvider>().searchPodcasts(
+        query,
+        country: _selectedCountry,
+        attribute: _selectedAttribute,
+        language: _selectedLanguage,
+      );
     });
+  }
+
+  void _onCountryChanged(ps.Country? value) {
+    setState(() {
+      _selectedCountry = value;
+    });
+    context.read<PodcastProvider>().searchPodcasts(
+      _searchController.text,
+      country: _selectedCountry,
+      attribute: _selectedAttribute,
+      language: _selectedLanguage,
+    );
+  }
+
+  void _onAttributeChanged(ps.Attribute? value) {
+    if (value == null) return;
+    setState(() {
+      _selectedAttribute = value;
+    });
+    context.read<PodcastProvider>().searchPodcasts(
+      _searchController.text,
+      country: _selectedCountry,
+      attribute: _selectedAttribute,
+      language: _selectedLanguage,
+    );
+  }
+
+  void _onLanguageChanged(String? value) {
+    setState(() {
+      _selectedLanguage = value;
+    });
+    context.read<PodcastProvider>().searchPodcasts(
+      _searchController.text,
+      country: _selectedCountry,
+      attribute: _selectedAttribute,
+      language: _selectedLanguage,
+    );
+  }
+
+  String _getCountryName(ps.Country country) {
+    try {
+      final name = country.toString().split('.').last;
+      final result = name.replaceAllMapped(
+        RegExp(r'([A-Z])'),
+        (match) => ' ${match.group(0)}',
+      );
+      return result[0].toUpperCase() + result.substring(1);
+    } catch (e) {
+      return country.toString();
+    }
+  }
+
+  String _getAttributeName(ps.Attribute attribute) {
+    switch (attribute) {
+      case ps.Attribute.title:
+        return 'Title';
+      case ps.Attribute.author:
+        return 'Author';
+      case ps.Attribute.description:
+        return 'Description';
+      case ps.Attribute.keywords:
+        return 'Keywords';
+      default:
+        return attribute.toString().split('.').last.toUpperCase();
+    }
+  }
+
+  String _getLanguageName(String? code) {
+    switch (code) {
+      case 'en':
+        return 'English';
+      case 'fr':
+        return 'French';
+      case 'es':
+        return 'Spanish';
+      case 'de':
+        return 'German';
+      case 'it':
+        return 'Italian';
+      case 'ja':
+        return 'Japanese';
+      case 'zh':
+        return 'Chinese';
+      default:
+        return 'Global';
+    }
   }
 
   @override
@@ -45,30 +140,161 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
       body: Column(
         children: [
-          // Search bar
+          // Search bar, Country, Attribute and Language selection
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _onSearchChanged,
-              decoration: InputDecoration(
-                hintText: l10n.searchHint,
-                prefixIcon: const Icon(Icons.search_rounded),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear_rounded),
-                        onPressed: () {
-                          _searchController.clear();
-                          context.read<PodcastProvider>().searchPodcasts('');
-                        },
-                      )
-                    : null,
-                filled: true,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+            child: Column(
+              children: [
+                TextField(
+                  controller: _searchController,
+                  onChanged: _onSearchChanged,
+                  decoration: InputDecoration(
+                    hintText: l10n.searchHint,
+                    prefixIcon: const Icon(Icons.search_rounded),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear_rounded),
+                            onPressed: () {
+                              _searchController.clear();
+                              context.read<PodcastProvider>().searchPodcasts(
+                                '',
+                                country: _selectedCountry,
+                                attribute: _selectedAttribute,
+                                language: _selectedLanguage,
+                              );
+                            },
+                          )
+                        : null,
+                    filled: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(height: 12),
+                // Filters Row 1: Country & Attribute
+                Row(
+                  children: [
+                    // Country Dropdown
+                    Expanded(
+                      flex: 1,
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.public_rounded,
+                            size: 20,
+                            color: AppColors.textSecondary,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<ps.Country?>(
+                                value: _selectedCountry,
+                                isExpanded: true,
+                                hint: const Text('Global'),
+                                items: [
+                                  const DropdownMenuItem<ps.Country?>(
+                                    value: null,
+                                    child: Text('Global'),
+                                  ),
+                                  // Show common countries first for better UX
+                                  ...[
+                                    ps.Country.canada,
+                                    ps.Country.unitedStates,
+                                    ps.Country.unitedKingdom,
+                                    ps.Country.france,
+                                  ].map((country) {
+                                    return DropdownMenuItem<ps.Country?>(
+                                      value: country,
+                                      child: Text(_getCountryName(country)),
+                                    );
+                                  }),
+                                ],
+                                onChanged: _onCountryChanged,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    // Attribute Dropdown
+                    Expanded(
+                      flex: 1,
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.sort_rounded,
+                            size: 20,
+                            color: AppColors.textSecondary,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<ps.Attribute>(
+                                value: _selectedAttribute,
+                                isExpanded: true,
+                                items:
+                                    [
+                                      ps.Attribute.description,
+                                      ps.Attribute.title,
+                                      ps.Attribute.author,
+                                      ps.Attribute.keywords,
+                                    ].map((attribute) {
+                                      return DropdownMenuItem<ps.Attribute>(
+                                        value: attribute,
+                                        child: Text(
+                                          _getAttributeName(attribute),
+                                        ),
+                                      );
+                                    }).toList(),
+                                onChanged: _onAttributeChanged,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Filters Row 2: Language
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.language_rounded,
+                      size: 20,
+                      color: AppColors.textSecondary,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String?>(
+                          value: _selectedLanguage,
+                          isExpanded: true,
+                          hint: const Text('Select Language (Global)'),
+                          items: [
+                            const DropdownMenuItem<String?>(
+                              value: null,
+                              child: Text('Global'),
+                            ),
+                            ...['en', 'fr', 'es', 'de', 'it', 'ja', 'zh'].map((
+                              lang,
+                            ) {
+                              return DropdownMenuItem<String?>(
+                                value: lang,
+                                child: Text(_getLanguageName(lang)),
+                              );
+                            }),
+                          ],
+                          onChanged: _onLanguageChanged,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
 

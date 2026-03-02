@@ -16,6 +16,32 @@ class MiniPlayer extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
+        if (provider.hasError) {
+          return Container(
+            height: 80,
+            color: AppColors.error.withValues(alpha: 0.1),
+            child: ListTile(
+              leading: const Icon(
+                Icons.error_outline_rounded,
+                color: AppColors.error,
+              ),
+              title: const Text(
+                'Playback Error',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(
+                provider.error!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: provider.stop,
+              ),
+            ),
+          );
+        }
+
         final episode = provider.currentEpisode!;
 
         return GestureDetector(
@@ -85,8 +111,11 @@ class MiniPlayer extends StatelessWidget {
                           children: [
                             IconButton(
                               icon: const Icon(Icons.replay_10_rounded),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
                               onPressed: provider.skipBackward,
                             ),
+                            const SizedBox(width: 8),
                             Container(
                               decoration: const BoxDecoration(
                                 color: AppColors.primary,
@@ -102,9 +131,19 @@ class MiniPlayer extends StatelessWidget {
                                 onPressed: provider.togglePlayPause,
                               ),
                             ),
+                            const SizedBox(width: 8),
                             IconButton(
                               icon: const Icon(Icons.forward_30_rounded),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
                               onPressed: provider.skipForward,
+                            ),
+                            const SizedBox(width: 8),
+                            IconButton(
+                              icon: const Icon(Icons.stop_rounded),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              onPressed: provider.stop,
                             ),
                           ],
                         ),

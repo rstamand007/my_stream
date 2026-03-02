@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:podcast_search/podcast_search.dart' as ps;
 import 'package:webfeed_revised/webfeed_revised.dart';
@@ -19,12 +20,20 @@ class PodcastApiService {
   };
 
   // Search for podcasts using iTunes API
-  Future<List<Podcast>> searchPodcasts(String query) async {
+  Future<List<Podcast>> searchPodcasts(
+    String query, {
+    ps.Country? country,
+    ps.Attribute? attribute,
+    String? language,
+  }) async {
     try {
+      // If the parameter is optional and there is no value provided then remove the filter.
+      // However, if the parameter is mandatory in the library, use Canada as default.
       final result = await _search.search(
         query,
-        country: ps.Country.unitedStates,
-        attribute: ps.Attribute.title,
+        country: country ?? ps.Country.canada,
+        attribute: attribute ?? ps.Attribute.description,
+        language: language ?? '',
         limit: 25,
       );
 
@@ -113,7 +122,16 @@ class PodcastApiService {
       }
       return [];
     } catch (e) {
-      logger.e('Error fetching episodes from $feedUrl', error: e);
+      if (kIsWeb && e.toString().contains('Failed to fetch')) {
+        logger.e(
+          'CORS Error: Failed to fetch episodes from $feedUrl on Web. '
+          'CBC and many other podcast providers do not allow cross-origin requests from web browsers. '
+          'Please run the app on a native platform (Android/iOS) to fetch this feed.',
+          error: e,
+        );
+      } else {
+        logger.e('Error fetching episodes from $feedUrl', error: e);
+      }
       return [];
     }
   }
@@ -123,8 +141,23 @@ class PodcastApiService {
           // Find audio enclosure
           final audioUrl = item.enclosure?.url ?? '';
 
-          // Parse duration
-          final itunesDuration = item.itunes?.duration?.inSeconds ?? 0;
+          // Parse duration more robustly
+          int duration = 0;
+          try {
+            if (item.itunes?.duration != null) {
+              duration = item.itunes!.duration!.inSeconds;
+            }
+
+            if (duration == 0) {
+              // Fallback if itunes duration is 0 or null - some feeds put it in other places
+              // For now, we'll stick to what webfeed provides but ensure we don't crash
+            }
+          } catch (e) {
+            logger.w(
+              'Error parsing duration for episode: ${item.title}',
+              error: e,
+            );
+          }
 
           return Episode(
             id: item.guid ?? item.link ?? '',
@@ -132,7 +165,7 @@ class PodcastApiService {
             title: item.title ?? 'Untitled Episode',
             description: item.description ?? item.content?.value ?? '',
             audioUrl: audioUrl,
-            duration: itunesDuration,
+            duration: duration,
             publishDate: item.pubDate ?? DateTime.now(),
           );
         }).toList() ??

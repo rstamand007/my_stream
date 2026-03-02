@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:my_stream/l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
 import 'library_screen.dart';
 import 'search_screen.dart';
 import 'downloads_screen.dart';
 import 'settings_screen.dart';
 import '../widgets/mini_player.dart';
 import '../utils/constants.dart';
+import '../providers/podcast_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -93,6 +95,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return GestureDetector(
       onTap: () {
+        if (index == 0) {
+          // Refresh library when Library tab is selected
+          context.read<PodcastProvider>().loadSubscribedPodcasts();
+        }
         setState(() {
           _currentIndex = index;
         });

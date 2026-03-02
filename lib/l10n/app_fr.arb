@@ -43,5 +43,7 @@
   "french": "Français",
   "themeLight": "Clair",
   "themeDark": "Sombre",
-  "themeSystem": "Système"
+  "themeSystem": "Système",
+  "refresh": "Actualiser",
+  "lastUpdated": "Dernière mise à jour : {date}"
 }

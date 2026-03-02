@@ -18,6 +18,8 @@ class Podcast {
   final String feedUrl;
   @HiveField(6)
   final bool isSubscribed;
+  @HiveField(7)
+  final DateTime? lastUpdatedAt;
 
   Podcast({
     required this.id,
@@ -27,6 +29,7 @@ class Podcast {
     required this.artworkUrl,
     required this.feedUrl,
     this.isSubscribed = false,
+    this.lastUpdatedAt,
   });
 
   // Create from JSON (iTunes API)
@@ -38,6 +41,9 @@ class Podcast {
       description: json['description'] ?? '',
       artworkUrl: json['artworkUrl600'] ?? json['artworkUrl100'] ?? '',
       feedUrl: json['feedUrl'] ?? '',
+      lastUpdatedAt: json['lastUpdatedAt'] != null
+          ? DateTime.parse(json['lastUpdatedAt'])
+          : null,
     );
   }
 
@@ -51,6 +57,9 @@ class Podcast {
       artworkUrl: map['artworkUrl'],
       feedUrl: map['feedUrl'],
       isSubscribed: map['isSubscribed'] == 1,
+      lastUpdatedAt: map['lastUpdatedAt'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(map['lastUpdatedAt'])
+          : null,
     );
   }
 
@@ -64,6 +73,7 @@ class Podcast {
       'artworkUrl': artworkUrl,
       'feedUrl': feedUrl,
       'isSubscribed': isSubscribed ? 1 : 0,
+      'lastUpdatedAt': lastUpdatedAt?.millisecondsSinceEpoch,
     };
   }
 
@@ -76,6 +86,7 @@ class Podcast {
     String? artworkUrl,
     String? feedUrl,
     bool? isSubscribed,
+    DateTime? lastUpdatedAt,
   }) {
     return Podcast(
       id: id ?? this.id,
@@ -85,6 +96,7 @@ class Podcast {
       artworkUrl: artworkUrl ?? this.artworkUrl,
       feedUrl: feedUrl ?? this.feedUrl,
       isSubscribed: isSubscribed ?? this.isSubscribed,
+      lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
     );
   }
 }
