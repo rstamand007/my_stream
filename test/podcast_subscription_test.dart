@@ -79,26 +79,33 @@ void main() {
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(createWidgetUnderTest());
-    await tester.pump(const Duration(seconds: 1));
+    await tester.pump(const Duration(milliseconds: 500));
 
-    // Initially not subscribed
-    expect(find.text('Subscribe'), findsOneWidget);
-    expect(find.text('Subscribed'), findsNothing);
+    // Initially not subscribed - expect add icon
+    final addButton = find.byIcon(Icons.add_circle_outline_rounded);
+    expect(addButton, findsOneWidget);
 
-    // Tap subscribe
-    await tester.tap(find.text('Subscribe'));
-    await tester.pump(const Duration(seconds: 1));
+    // Ensure visible and tap the button
+    await tester.ensureVisible(addButton);
+    await tester.tap(
+      find.ancestor(of: addButton, matching: find.byType(ElevatedButton)),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
 
-    // Should now be subscribed
-    expect(find.text('Subscribed'), findsOneWidget);
-    expect(find.text('Subscribe'), findsNothing);
+    // Should now be subscribed - expect check icon
+    final checkButton = find.byIcon(Icons.check_rounded);
+    expect(checkButton, findsOneWidget);
 
-    // Tap unsubscribe
-    await tester.tap(find.text('Subscribed'));
-    await tester.pump(const Duration(seconds: 1));
+    // Ensure visible and tap the button again to unsubscribe
+    await tester.ensureVisible(checkButton);
+    await tester.tap(
+      find.ancestor(of: checkButton, matching: find.byType(ElevatedButton)),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
 
-    // Should be unsubscribed again
-    expect(find.text('Subscribe'), findsOneWidget);
-    expect(find.text('Subscribed'), findsNothing);
+    // Should be unsubscribed again - expect add icon
+    expect(find.byIcon(Icons.add_circle_outline_rounded), findsOneWidget);
   });
 }
