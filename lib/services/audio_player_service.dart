@@ -1,4 +1,5 @@
 import 'package:just_audio/just_audio.dart';
+import 'package:audio_session/audio_session.dart';
 import '../models/episode.dart';
 import '../utils/constants.dart';
 import '../utils/logger.dart';
@@ -26,7 +27,8 @@ class AudioPlayerService {
 
   // Initialize audio service
   Future<void> init() async {
-    // Audio player initialization if needed in the future
+    final session = await AudioSession.instance;
+    await session.configure(const AudioSessionConfiguration.music());
   }
 
   // Play episode
