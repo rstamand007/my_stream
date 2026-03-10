@@ -107,7 +107,7 @@ void main() {
 
     // The DateFormat.yMMMd().add_Hm() for Feb 27, 2026 10:00
     // "Feb 27, 2026 10:00" (English)
-    expect(find.byIcon(Icons.update), findsOneWidget);
+    expect(find.byIcon(Icons.refresh), findsOneWidget);
     expect(find.textContaining('2026'), findsOneWidget);
   });
 

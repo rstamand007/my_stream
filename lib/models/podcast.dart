@@ -2,6 +2,9 @@ import 'package:hive/hive.dart';
 
 part 'podcast.g.dart';
 
+// Sentinel used by copyWith to distinguish "not provided" from explicit null.
+const _omitted = Object();
+
 @HiveType(typeId: 0)
 class Podcast {
   @HiveField(0)
@@ -86,7 +89,7 @@ class Podcast {
     String? artworkUrl,
     String? feedUrl,
     bool? isSubscribed,
-    DateTime? lastUpdatedAt,
+    Object? lastUpdatedAt = _omitted,
   }) {
     return Podcast(
       id: id ?? this.id,
@@ -96,7 +99,9 @@ class Podcast {
       artworkUrl: artworkUrl ?? this.artworkUrl,
       feedUrl: feedUrl ?? this.feedUrl,
       isSubscribed: isSubscribed ?? this.isSubscribed,
-      lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
+      lastUpdatedAt: identical(lastUpdatedAt, _omitted)
+          ? this.lastUpdatedAt
+          : lastUpdatedAt as DateTime?,
     );
   }
 }
