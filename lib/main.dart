@@ -9,20 +9,49 @@ import 'providers/locale_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/splash_screen.dart';
 import 'utils/constants.dart';
-
 import 'package:hive_flutter/hive_flutter.dart';
 import 'services/database_service.dart';
+import 'package:audio_service/audio_service.dart';
+import 'services/audio_handler.dart';
+import 'services/audio_player_service.dart';
+
+/// Top-level function required by audio_service to initialize the handler
+/// in a separate background isolate. Background isolates cannot access
+/// closures inside main().
+MyStreamAudioHandler _initAudioHandler() {
+  return MyStreamAudioHandler();
+}
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Hive
-  await Hive.initFlutter();
+    // Initialize Hive
+    await Hive.initFlutter();
 
-  // Initialize Database Service
-  await DatabaseService.instance.init();
+    // Initialize Database Service
+    await DatabaseService.instance.init();
 
-  runApp(const MyStreamApp());
+    // Bootstrap audio_service
+    final audioHandler = await AudioService.init<MyStreamAudioHandler>(
+      builder: _initAudioHandler,
+      config: const AudioServiceConfig(
+        androidNotificationChannelId: 'com.mystream.my_stream.audio',
+        androidNotificationChannelName: 'MyStream Playback',
+        androidNotificationOngoing: true,
+        androidStopForegroundOnPause: true,
+      ),
+    );
+
+    // Give AudioPlayerService a reference to the handler.
+    AudioPlayerService.instance.setHandler(audioHandler);
+
+    runApp(const MyStreamApp());
+  } catch (e, stack) {
+    print('DEBUG: CRITICAL ERROR DURING STARTUP: $e');
+    print(stack);
+    runApp(const MyStreamApp());
+  }
 }
 
 class MyStreamApp extends StatelessWidget {
@@ -32,9 +61,18 @@ class MyStreamApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => PodcastProvider()..init()),
-        ChangeNotifierProvider(create: (_) => PlayerProvider()..init()),
-        ChangeNotifierProvider(create: (_) => DownloadProvider()..init()),
+        ChangeNotifierProvider(create: (_) {
+          print('DEBUG: Initializing PodcastProvider');
+          return PodcastProvider()..init();
+        }),
+        ChangeNotifierProvider(create: (_) {
+          print('DEBUG: Initializing PlayerProvider');
+          return PlayerProvider()..init();
+        }),
+        ChangeNotifierProvider(create: (_) {
+          print('DEBUG: Initializing DownloadProvider');
+          return DownloadProvider()..init();
+        }),
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],

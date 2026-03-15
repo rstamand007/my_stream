@@ -15,6 +15,9 @@ class MockPodcastProvider extends ChangeNotifier implements PodcastProvider {
   bool isPodcastSubscribed(String podcastId) => _isSubscribed;
 
   @override
+  List<Podcast> get subscribedPodcasts => [];
+
+  @override
   Future<void> subscribeToPodcast(Podcast podcast) async {
     _isSubscribed = true;
     notifyListeners();
@@ -87,9 +90,7 @@ void main() {
 
     // Ensure visible and tap the button
     await tester.ensureVisible(addButton);
-    await tester.tap(
-      find.ancestor(of: addButton, matching: find.byType(ElevatedButton)),
-    );
+    await tester.tap(addButton);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 
@@ -99,9 +100,7 @@ void main() {
 
     // Ensure visible and tap the button again to unsubscribe
     await tester.ensureVisible(checkButton);
-    await tester.tap(
-      find.ancestor(of: checkButton, matching: find.byType(ElevatedButton)),
-    );
+    await tester.tap(checkButton);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 

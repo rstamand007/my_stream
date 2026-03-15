@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:xml/xml.dart';
 import 'package:podcast_search/podcast_search.dart' as ps;
-import 'package:webfeed_revised/webfeed_revised.dart';
 import '../models/podcast.dart';
 import '../models/episode.dart';
 import '../utils/constants.dart';
@@ -101,19 +101,12 @@ class PodcastApiService {
           return [];
         }
 
-        // Try parsing as RSS first
         try {
-          final feed = RssFeed.parse(response.body);
-          return _parseRssEpisodes(feed, podcastId);
+          final document = XmlDocument.parse(response.body);
+          return _parseXmlEpisodes(document, podcastId);
         } catch (e) {
-          // If RSS fails, try Atom
-          try {
-            final feed = AtomFeed.parse(response.body);
-            return _parseAtomEpisodes(feed, podcastId);
-          } catch (e) {
-            logger.e('Error parsing feed as RSS or Atom: $feedUrl', error: e);
-            return [];
-          }
+          logger.e('Error parsing feed: $feedUrl', error: e);
+          return [];
         }
       } else {
         logger.w(
@@ -136,69 +129,131 @@ class PodcastApiService {
     }
   }
 
-  List<Episode> _parseRssEpisodes(RssFeed feed, String podcastId) {
-    return feed.items?.map((item) {
-          // Find audio enclosure
-          final audioUrl = item.enclosure?.url ?? '';
+  List<Episode> _parseXmlEpisodes(XmlDocument document, String podcastId) {
+    try {
+      final items = document.findAllElements('item');
+      if (items.isNotEmpty) {
+        return items.map((node) => _parseXmlItem(node, podcastId)).toList();
+      }
 
-          // Parse duration more robustly
-          int duration = 0;
-          try {
-            if (item.itunes?.duration != null) {
-              duration = item.itunes!.duration!.inSeconds;
-            }
-
-            if (duration == 0) {
-              // Fallback if itunes duration is 0 or null - some feeds put it in other places
-              // For now, we'll stick to what webfeed provides but ensure we don't crash
-            }
-          } catch (e) {
-            logger.w(
-              'Error parsing duration for episode: ${item.title}',
-              error: e,
-            );
-          }
-
-          return Episode(
-            id: item.guid ?? item.link ?? '',
-            podcastId: podcastId,
-            title: item.title ?? 'Untitled Episode',
-            description: item.description ?? item.content?.value ?? '',
-            audioUrl: audioUrl,
-            duration: duration,
-            publishDate: item.pubDate ?? DateTime.now(),
-          );
-        }).toList() ??
-        [];
+      final entries = document.findAllElements('entry');
+      if (entries.isNotEmpty) {
+        return entries.map((node) => _parseXmlEntry(node, podcastId)).toList();
+      }
+    } catch (e) {
+      logger.e('Error extracting episodes from XML', error: e);
+    }
+    return [];
   }
 
-  List<Episode> _parseAtomEpisodes(AtomFeed feed, String podcastId) {
-    return feed.items?.map((item) {
-          // Find audio link
-          String audioUrl = '';
-          try {
-            final audioLink = item.links?.firstWhere(
-              (link) =>
-                  (link.type?.contains('audio') ?? false) ||
-                  link.rel == 'enclosure',
-            );
-            audioUrl = audioLink?.href ?? '';
-          } catch (e) {
-            // No audio link found
-            audioUrl = '';
-          }
+  Episode _parseXmlItem(XmlElement item, String podcastId) {
+    final title = _getText(item, 'title') ?? 'Untitled Episode';
+    final description = _getText(item, 'content:encoded') ?? _getText(item, 'description') ?? '';
+    final guid = _getText(item, 'guid') ?? _getText(item, 'link') ?? '';
 
-          return Episode(
-            id: item.id ?? '',
-            podcastId: podcastId,
-            title: item.title ?? 'Untitled Episode',
-            description: item.summary ?? item.content ?? '',
-            audioUrl: audioUrl,
-            duration: 0, // Atom feeds typically don't include duration
-            publishDate: item.updated ?? DateTime.now(),
-          );
-        }).toList() ??
-        [];
+    String audioUrl = '';
+    final enclosure = item.findElements('enclosure').firstOrNull;
+    if (enclosure != null) {
+      audioUrl = enclosure.getAttribute('url') ?? '';
+    }
+
+    int duration = 0;
+    try {
+      final itunesDuration = _getText(item, 'itunes:duration');
+      if (itunesDuration != null) {
+        final parts = itunesDuration.split(':');
+        if (parts.length == 3) {
+          duration = int.parse(parts[0]) * 3600 + int.parse(parts[1]) * 60 + int.parse(parts[2]);
+        } else if (parts.length == 2) {
+          duration = int.parse(parts[0]) * 60 + int.parse(parts[1]);
+        } else {
+          duration = int.parse(parts[0]);
+        }
+      }
+    } catch (_) {}
+
+    DateTime pubDate = DateTime.now();
+    final pubDateStr = _getText(item, 'pubDate');
+    if (pubDateStr != null) {
+      pubDate = _parseDate(pubDateStr);
+    }
+
+    return Episode(
+      id: guid,
+      podcastId: podcastId,
+      title: title,
+      description: description,
+      audioUrl: audioUrl,
+      duration: duration,
+      publishDate: pubDate,
+    );
+  }
+
+  Episode _parseXmlEntry(XmlElement entry, String podcastId) {
+    final title = _getText(entry, 'title') ?? 'Untitled Episode';
+    final description = _getText(entry, 'content') ?? _getText(entry, 'summary') ?? '';
+    final id = _getText(entry, 'id') ?? '';
+
+    String audioUrl = '';
+    final links = entry.findElements('link');
+    for (final link in links) {
+      final type = link.getAttribute('type') ?? '';
+      final rel = link.getAttribute('rel') ?? '';
+      if (type.contains('audio') || rel == 'enclosure') {
+        audioUrl = link.getAttribute('href') ?? '';
+        break;
+      }
+    }
+
+    DateTime pubDate = DateTime.now();
+    final updatedStr = _getText(entry, 'updated') ?? _getText(entry, 'published');
+    if (updatedStr != null) {
+      pubDate = DateTime.tryParse(updatedStr) ?? DateTime.now();
+    }
+
+    return Episode(
+      id: id,
+      podcastId: podcastId,
+      title: title,
+      description: description,
+      audioUrl: audioUrl,
+      duration: 0,
+      publishDate: pubDate,
+    );
+  }
+
+  String? _getText(XmlElement node, String tag) {
+    return node.findElements(tag).firstOrNull?.innerText.trim();
+  }
+
+  DateTime _parseDate(String dateStr) {
+    try {
+      final dt = DateTime.tryParse(dateStr);
+      if (dt != null) return dt;
+
+      var str = dateStr;
+      if (str.contains(',')) {
+        str = str.split(',')[1].trim();
+      }
+      final parts = str.split(RegExp(r'\s+'));
+      if (parts.length >= 4) {
+        final day = parts[0].padLeft(2, '0');
+        final monthStr = parts[1].toLowerCase();
+        final year = parts[2];
+        final timeStr = parts[3];
+        
+        const months = {
+          'jan': '01', 'feb': '02', 'mar': '03', 'apr': '04', 'may': '05', 'jun': '06',
+          'jul': '07', 'aug': '08', 'sep': '09', 'oct': '10', 'nov': '11', 'dec': '12'
+        };
+        final month = months[monthStr] ?? '01';
+        
+        final isoStr = '$year-$month-$day $timeStr';
+        final parsed = DateTime.tryParse(isoStr);
+        if (parsed != null) return parsed;
+      }
+    } catch (_) {}
+    return DateTime.now();
   }
 
   // Get trending/featured podcasts (using a predefined search)
