@@ -14,11 +14,28 @@ class DownloadProvider with ChangeNotifier {
   List<Episode> _downloadedEpisodes = [];
   final Map<String, double> _downloadProgress = {};
 
+  bool _isAutoplayEnabled = false;
+
   // Getters
   List<Episode> get downloadedEpisodes => _downloadedEpisodes;
+  bool get isAutoplayEnabled => _isAutoplayEnabled;
+
+  void toggleAutoplay(bool value) {
+    _isAutoplayEnabled = value;
+    notifyListeners();
+  }
 
   double getProgress(String episodeId) {
     return _downloadProgress[episodeId] ?? 0.0;
+  }
+
+  void reorderDownloads(int oldIndex, int newIndex) {
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    final item = _downloadedEpisodes.removeAt(oldIndex);
+    _downloadedEpisodes.insert(newIndex, item);
+    notifyListeners();
   }
 
   bool isDownloading(String episodeId) {
