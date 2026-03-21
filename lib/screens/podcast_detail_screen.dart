@@ -42,220 +42,222 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          // App bar with podcast artwork
-          SliverAppBar(
-            expandedHeight: 300,
-            pinned: true,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  CachedNetworkImage(
-                    imageUrl: widget.podcast.artworkUrl,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: AppColors.surface,
-                      child: const Center(child: CircularProgressIndicator()),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      color: AppColors.surface,
-                      child: const Icon(Icons.podcasts, size: 40),
-                    ),
-                  ),
-                  // Gradient overlay
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Theme.of(
-                            context,
-                          ).scaffoldBackgroundColor.withValues(alpha: 0.7),
-                          Theme.of(context).scaffoldBackgroundColor,
-                        ],
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            // App bar with podcast artwork
+            SliverAppBar(
+              expandedHeight: 300,
+              pinned: true,
+              flexibleSpace: FlexibleSpaceBar(
+                background: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    CachedNetworkImage(
+                      imageUrl: widget.podcast.artworkUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        color: AppColors.surface,
+                        child: const Center(child: CircularProgressIndicator()),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        color: AppColors.surface,
+                        child: const Icon(Icons.podcasts, size: 40),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              Consumer<PodcastProvider>(
-                builder: (context, provider, child) {
-                  return IconButton(
-                    icon: const Icon(Icons.refresh),
-                    tooltip: l10n.refresh,
-                    onPressed: provider.isLoading
-                        ? null
-                        : () => provider.refreshEpisodes(
-                            widget.podcast.id,
-                            widget.podcast.feedUrl,
-                          ),
-                  );
-                },
-              ),
-            ],
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(4),
-              child: Consumer<PodcastProvider>(
-                builder: (context, provider, child) {
-                  return provider.isLoading
-                      ? const LinearProgressIndicator(minHeight: 4)
-                      : const SizedBox(height: 4);
-                },
-              ),
-            ),
-          ),
-
-          // Podcast info
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.podcast.title,
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    widget.podcast.author,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  Consumer<PodcastProvider>(
-                    builder: (context, provider, child) {
-                      // Try to get updated podcast from provider (for lastUpdatedAt)
-                      final podcast = provider.subscribedPodcasts.firstWhere(
-                        (p) => p.id == widget.podcast.id,
-                        orElse: () => widget.podcast,
-                      );
-
-                      if (podcast.lastUpdatedAt == null) {
-                        return const SizedBox.shrink();
-                      }
-
-                      final dateStr = DateFormat.yMMMd().add_Hm().format(
-                        podcast.lastUpdatedAt!,
-                      );
-                      return Text(
-                        l10n.lastUpdated(dateStr),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          fontStyle: FontStyle.italic,
-                          color: Theme.of(context).hintColor,
+                    // Gradient overlay
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Theme.of(
+                              context,
+                            ).scaffoldBackgroundColor.withValues(alpha: 0.7),
+                            Theme.of(context).scaffoldBackgroundColor,
+                          ],
                         ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Subscribe button
-                  Consumer<PodcastProvider>(
-                    builder: (context, provider, child) {
-                      final isSubscribed = provider.isPodcastSubscribed(
-                        widget.podcast.id,
-                      );
-
-                      return SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: () async {
-                            if (isSubscribed) {
-                              await provider.unsubscribeFromPodcast(
-                                widget.podcast.id,
-                              );
-                            } else {
-                              await provider.subscribeToPodcast(widget.podcast);
-                            }
-                          },
-                          icon: Icon(
-                            isSubscribed
-                                ? Icons.check_rounded
-                                : Icons.add_circle_outline_rounded,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                Consumer<PodcastProvider>(
+                  builder: (context, provider, child) {
+                    return IconButton(
+                      icon: const Icon(Icons.refresh),
+                      tooltip: l10n.refresh,
+                      onPressed: provider.isLoading
+                          ? null
+                          : () => provider.refreshEpisodes(
+                              widget.podcast.id,
+                              widget.podcast.feedUrl,
+                            ),
+                    );
+                  },
+                ),
+              ],
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(4),
+                child: Consumer<PodcastProvider>(
+                  builder: (context, provider, child) {
+                    return provider.isLoading
+                        ? const LinearProgressIndicator(minHeight: 4)
+                        : const SizedBox(height: 4);
+                  },
+                ),
+              ),
+            ),
+  
+            // Podcast info
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.podcast.title,
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      widget.podcast.author,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Consumer<PodcastProvider>(
+                      builder: (context, provider, child) {
+                        // Try to get updated podcast from provider (for lastUpdatedAt)
+                        final podcast = provider.subscribedPodcasts.firstWhere(
+                          (p) => p.id == widget.podcast.id,
+                          orElse: () => widget.podcast,
+                        );
+  
+                        if (podcast.lastUpdatedAt == null) {
+                          return const SizedBox.shrink();
+                        }
+  
+                        final dateStr = DateFormat.yMMMd().add_Hm().format(
+                          podcast.lastUpdatedAt!,
+                        );
+                        return Text(
+                          l10n.lastUpdated(dateStr),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            fontStyle: FontStyle.italic,
+                            color: Theme.of(context).hintColor,
                           ),
-                          label: Text(
-                            isSubscribed ? l10n.subscribed : l10n.subscribe,
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isSubscribed
-                                ? AppColors.success
-                                : AppColors.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+  
+                    // Subscribe button
+                    Consumer<PodcastProvider>(
+                      builder: (context, provider, child) {
+                        final isSubscribed = provider.isPodcastSubscribed(
+                          widget.podcast.id,
+                        );
+  
+                        return SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              if (isSubscribed) {
+                                await provider.unsubscribeFromPodcast(
+                                  widget.podcast.id,
+                                );
+                              } else {
+                                await provider.subscribeToPodcast(widget.podcast);
+                              }
+                            },
+                            icon: Icon(
+                              isSubscribed
+                                  ? Icons.check_rounded
+                                  : Icons.add_circle_outline_rounded,
+                            ),
+                            label: Text(
+                              isSubscribed ? l10n.subscribed : l10n.subscribe,
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isSubscribed
+                                  ? AppColors.success
+                                  : AppColors.primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Description
-                  if (widget.podcast.description.isNotEmpty) ...[
+                        );
+                      },
+                    ),
+  
+                    const SizedBox(height: 16),
+  
+                    // Description
+                    if (widget.podcast.description.isNotEmpty) ...[
+                      Text(
+                        l10n.about,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.headlineMedium?.copyWith(fontSize: 18),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        widget.podcast.description,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+  
                     Text(
-                      l10n.about,
+                      l10n.episodes,
                       style: Theme.of(
                         context,
                       ).textTheme.headlineMedium?.copyWith(fontSize: 18),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      widget.podcast.description,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 24),
                   ],
-
-                  Text(
-                    l10n.episodes,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.headlineMedium?.copyWith(fontSize: 18),
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
-
-          // Episodes list
-          Consumer<PodcastProvider>(
-            builder: (context, provider, child) {
-              final episodes = provider.getEpisodes(widget.podcast.id);
-
-              if (provider.isLoading && episodes.isEmpty) {
-                return const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-
-              if (episodes.isEmpty) {
-                return SliverFillRemaining(
-                  child: Center(
-                    child: Text(
-                      l10n.noEpisodes,
-                      style: Theme.of(context).textTheme.bodyMedium,
+  
+            // Episodes list
+            Consumer<PodcastProvider>(
+              builder: (context, provider, child) {
+                final episodes = provider.getEpisodes(widget.podcast.id);
+  
+                if (provider.isLoading && episodes.isEmpty) {
+                  return const SliverFillRemaining(
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+  
+                if (episodes.isEmpty) {
+                  return SliverFillRemaining(
+                    child: Center(
+                      child: Text(
+                        l10n.noEpisodes,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
                     ),
-                  ),
+                  );
+                }
+  
+                return SliverList(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    return EpisodeTile(episode: episodes[index]);
+                  }, childCount: episodes.length),
                 );
-              }
-
-              return SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  return EpisodeTile(episode: episodes[index]);
-                }, childCount: episodes.length),
-              );
-            },
-          ),
-        ],
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
