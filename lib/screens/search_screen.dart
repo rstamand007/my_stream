@@ -123,7 +123,7 @@ class _SearchScreenState extends State<SearchScreen> {
       case 'zh':
         return 'Chinese';
       default:
-        return 'Global';
+        return 'Select a language';
     }
   }
 
@@ -192,11 +192,11 @@ class _SearchScreenState extends State<SearchScreen> {
                               child: DropdownButton<ps.Country?>(
                                 value: _selectedCountry,
                                 isExpanded: true,
-                                hint: const Text('Global'),
+                                hint: const Text('Select a country'),
                                 items: [
                                   const DropdownMenuItem<ps.Country?>(
                                     value: null,
-                                    child: Text('Global'),
+                                    child: Text('Select a country'),
                                   ),
                                   // Show common countries first for better UX
                                   ...[
@@ -273,11 +273,11 @@ class _SearchScreenState extends State<SearchScreen> {
                         child: DropdownButton<String?>(
                           value: _selectedLanguage,
                           isExpanded: true,
-                          hint: const Text('Select Language (Global)'),
+                          hint: const Text('Select Language'),
                           items: [
                             const DropdownMenuItem<String?>(
                               value: null,
-                              child: Text('Global'),
+                              child: Text('Select a language'),
                             ),
                             ...['en', 'fr', 'es', 'de', 'it', 'ja', 'zh'].map((
                               lang,

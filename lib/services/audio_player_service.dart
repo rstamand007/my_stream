@@ -36,9 +36,9 @@ class AudioPlayerService {
 
   // Play episode
   Future<void> playEpisode(Episode episode, {Duration? startPosition}) async {
-    print('DEBUG: AudioPlayerService.playEpisode called for: ${episode.title}');
+    logger.d('AudioPlayerService.playEpisode called for: ${episode.title}');
     if (_handler == null) {
-      print('DEBUG: ERROR - AudioHandler is NULL in AudioPlayerService!');
+      logger.e('AudioHandler is NULL in AudioPlayerService!');
       return;
     }
 
@@ -52,12 +52,12 @@ class AudioPlayerService {
           ? Uri.encodeFull(url)
           : url;
 
-      print('DEBUG: Final URL: $finalUrl');
+      logger.d('Final URL: $finalUrl');
 
       _currentEpisode = episode;
 
       // Update media item for the OS
-      print('DEBUG: Adding MediaItem to handler');
+      logger.d('Adding MediaItem to handler');
       _handler?.mediaItem.add(
         MediaItem(
           id: episode.id,
@@ -71,7 +71,7 @@ class AudioPlayerService {
       );
 
       // Set audio source
-      print('DEBUG: Setting player source');
+      logger.d('Setting player source');
       if (finalUrl.startsWith('http')) {
         await _handler?.player.setUrl(finalUrl);
       } else {
@@ -87,11 +87,10 @@ class AudioPlayerService {
       }
 
       // Start playback
-      print('DEBUG: Starting playback');
+      logger.d('Starting playback');
       await _handler?.play();
-      print('DEBUG: Playback started');
+      logger.d('Playback started');
     } catch (e) {
-      print('DEBUG: Error in playEpisode: $e');
       logger.e('Error playing episode: ${episode.title}', error: e);
       rethrow;
     }
@@ -99,9 +98,9 @@ class AudioPlayerService {
 
   // Play/Pause toggle
   Future<void> togglePlayPause() async {
-    print('DEBUG: AudioPlayerService.togglePlayPause');
+    logger.d('AudioPlayerService.togglePlayPause');
     if (_handler == null) {
-      print('DEBUG: ERROR - AudioHandler is NULL in togglePlayPause');
+      logger.e('AudioHandler is NULL in togglePlayPause');
       return;
     }
     if (_handler?.player.playing ?? false) {
@@ -113,13 +112,13 @@ class AudioPlayerService {
 
   // Play
   Future<void> play() async {
-    print('DEBUG: AudioPlayerService.play');
+    logger.d('AudioPlayerService.play');
     await _handler?.play();
   }
 
   // Pause
   Future<void> pause() async {
-    print('DEBUG: AudioPlayerService.pause');
+    logger.d('AudioPlayerService.pause');
     await _handler?.pause();
   }
 

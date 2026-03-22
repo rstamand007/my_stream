@@ -33,6 +33,29 @@ class DownloadsScreen extends StatelessWidget {
           ),
           Consumer<DownloadProvider>(
             builder: (context, provider, child) {
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Checkbox(
+                    value: provider.isAutoplayEnabled,
+                    onChanged: (value) {
+                      if (value != null) provider.toggleAutoplay(value);
+                    },
+                  ),
+                  Text(
+                    'Autoplay',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+              );
+            },
+          ),
+          Consumer<DownloadProvider>(
+            builder: (context, provider, child) {
               if (provider.downloadedEpisodes.isEmpty) {
                 return const SizedBox.shrink();
               }
@@ -92,8 +115,15 @@ class DownloadsScreen extends StatelessWidget {
                       margin: const EdgeInsets.all(16),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: Row(
                         children: [
@@ -106,7 +136,7 @@ class DownloadsScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Storage Used',
+                                l10n.storageUsed,
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
                               Text(
@@ -126,11 +156,16 @@ class DownloadsScreen extends StatelessWidget {
 
               // Downloaded episodes list
               Expanded(
-                child: ListView.builder(
+                child: ReorderableListView.builder(
                   itemCount: provider.downloadedEpisodes.length,
+                  onReorder: (oldIndex, newIndex) {
+                    provider.reorderDownloads(oldIndex, newIndex);
+                  },
                   itemBuilder: (context, index) {
+                    final episode = provider.downloadedEpisodes[index];
                     return EpisodeTile(
-                      episode: provider.downloadedEpisodes[index],
+                      key: ValueKey(episode.id),
+                      episode: episode,
                     );
                   },
                 ),

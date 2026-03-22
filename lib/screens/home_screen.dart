@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_stream/l10n/app_localizations.dart';
+
 import 'package:provider/provider.dart';
 import 'library_screen.dart';
 import 'search_screen.dart';
@@ -28,7 +28,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: _screens[_currentIndex],
@@ -58,22 +57,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     _buildNavItem(
                       icon: Icons.library_music_rounded,
-                      label: l10n.library,
                       index: 0,
                     ),
                     _buildNavItem(
                       icon: Icons.search_rounded,
-                      label: l10n.search,
                       index: 1,
                     ),
                     _buildNavItem(
                       icon: Icons.download_rounded,
-                      label: l10n.downloads,
                       index: 2,
                     ),
                     _buildNavItem(
                       icon: Icons.settings_rounded,
-                      label: l10n.settings,
                       index: 3,
                     ),
                   ],
@@ -88,7 +83,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildNavItem({
     required IconData icon,
-    required String label,
     required int index,
   }) {
     final isSelected = _currentIndex == index;
@@ -119,15 +113,6 @@ class _HomeScreenState extends State<HomeScreen> {
               icon,
               color: isSelected ? AppColors.primary : AppColors.textSecondary,
               size: 24,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              ),
             ),
           ],
         ),

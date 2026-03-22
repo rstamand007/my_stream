@@ -39,6 +39,9 @@ class PlayerProvider with ChangeNotifier {
     _setupListeners();
   }
 
+  // Autoplay hook
+  Episode? Function()? onEpisodeEnded;
+
   void _setupListeners() {
     // Listen to player state changes
     _audioService.playerStateStream.listen((state) {
@@ -46,7 +49,12 @@ class PlayerProvider with ChangeNotifier {
 
       // Handle completion: transition to stop state
       if (state.processingState == ProcessingState.completed) {
-        stop();
+        final nextEpisode = onEpisodeEnded?.call();
+        if (nextEpisode != null) {
+          playEpisode(nextEpisode);
+        } else {
+          stop();
+        }
       } else {
         notifyListeners();
       }

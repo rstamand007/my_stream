@@ -11,7 +11,10 @@ import '../screens/now_playing_screen.dart';
 class EpisodeTile extends StatelessWidget {
   final Episode episode;
 
-  const EpisodeTile({super.key, required this.episode});
+  const EpisodeTile({
+    super.key,
+    required this.episode,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -75,11 +78,16 @@ class EpisodeTile extends StatelessWidget {
                 ],
               ],
             ),
-            trailing: _buildDownloadButton(
-              context,
-              downloadProvider,
-              isDownloaded,
-              isDownloading,
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildDownloadButton(
+                  context,
+                  downloadProvider,
+                  isDownloaded,
+                  isDownloading,
+                ),
+              ],
             ),
             onTap: () {
               if (isCurrentEpisode) {

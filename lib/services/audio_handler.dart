@@ -1,6 +1,7 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:audio_session/audio_session.dart';
+import '../utils/logger.dart';
 
 /// An [AudioHandler] that uses [just_audio] to play audio.
 /// This class bridges the Flutter app with the OS media notification and
@@ -9,21 +10,21 @@ class MyStreamAudioHandler extends BaseAudioHandler {
   final AudioPlayer player = AudioPlayer();
 
   MyStreamAudioHandler() {
-    print('DEBUG: MyStreamAudioHandler constructor called');
+    logger.d('MyStreamAudioHandler constructor called');
     _init();
   }
 
   Future<void> _init() async {
     try {
-      print('DEBUG: MyStreamAudioHandler._init() starting');
+      logger.d('MyStreamAudioHandler._init() starting');
       // Configure audio session for music playback
       final session = await AudioSession.instance;
       await session.configure(const AudioSessionConfiguration.music());
-      print('DEBUG: AudioSession configured');
+      logger.d('AudioSession configured');
 
       // Broadcast playback state changes to the OS
       player.playbackEventStream.map(_transformEvent).pipe(playbackState);
-      print('DEBUG: PlaybackState pipe established');
+      logger.d('PlaybackState pipe established');
 
       // Handle completion
       player.processingStateStream.listen((state) {
@@ -31,9 +32,9 @@ class MyStreamAudioHandler extends BaseAudioHandler {
           stop();
         }
       });
-      print('DEBUG: MyStreamAudioHandler._init() completed');
+      logger.d('MyStreamAudioHandler._init() completed');
     } catch (e) {
-      print('DEBUG: ERROR in MyStreamAudioHandler._init(): $e');
+      logger.e('ERROR in MyStreamAudioHandler._init()', error: e);
     }
   }
 

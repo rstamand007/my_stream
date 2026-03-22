@@ -31,7 +31,7 @@ class PodcastApiService {
       // However, if the parameter is mandatory in the library, use Canada as default.
       final result = await _search.search(
         query,
-        country: country ?? ps.Country.canada,
+        country: country ?? ps.Country.none,
         attribute: attribute ?? ps.Attribute.description,
         language: language ?? '',
         limit: 25,
@@ -67,11 +67,8 @@ class PodcastApiService {
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
-        if (response.body.isEmpty) {
-          logger.w('Empty response body from $url');
-          return null;
-        }
-        final data = json.decode(response.body);
+        final body = utf8.decode(response.bodyBytes, allowMalformed: true);
+        final data = json.decode(body);
         if (data['resultCount'] > 0) {
           return Podcast.fromJson(data['results'][0]);
         }
@@ -96,13 +93,9 @@ class PodcastApiService {
           .timeout(const Duration(seconds: 20));
 
       if (response.statusCode == 200) {
-        if (response.body.trim().isEmpty) {
-          logger.w('Empty response body for feed: $feedUrl');
-          return [];
-        }
-
         try {
-          final document = XmlDocument.parse(response.body);
+          final body = utf8.decode(response.bodyBytes, allowMalformed: true);
+          final document = XmlDocument.parse(body);
           return _parseXmlEpisodes(document, podcastId);
         } catch (e) {
           logger.e('Error parsing feed: $feedUrl', error: e);
@@ -148,7 +141,10 @@ class PodcastApiService {
 
   Episode _parseXmlItem(XmlElement item, String podcastId) {
     final title = _getText(item, 'title') ?? 'Untitled Episode';
-    final description = _getText(item, 'content:encoded') ?? _getText(item, 'description') ?? '';
+    final description =
+        _getText(item, 'content:encoded') ??
+        _getText(item, 'description') ??
+        '';
     final guid = _getText(item, 'guid') ?? _getText(item, 'link') ?? '';
 
     String audioUrl = '';
@@ -163,7 +159,10 @@ class PodcastApiService {
       if (itunesDuration != null) {
         final parts = itunesDuration.split(':');
         if (parts.length == 3) {
-          duration = int.parse(parts[0]) * 3600 + int.parse(parts[1]) * 60 + int.parse(parts[2]);
+          duration =
+              int.parse(parts[0]) * 3600 +
+              int.parse(parts[1]) * 60 +
+              int.parse(parts[2]);
         } else if (parts.length == 2) {
           duration = int.parse(parts[0]) * 60 + int.parse(parts[1]);
         } else {
@@ -191,7 +190,8 @@ class PodcastApiService {
 
   Episode _parseXmlEntry(XmlElement entry, String podcastId) {
     final title = _getText(entry, 'title') ?? 'Untitled Episode';
-    final description = _getText(entry, 'content') ?? _getText(entry, 'summary') ?? '';
+    final description =
+        _getText(entry, 'content') ?? _getText(entry, 'summary') ?? '';
     final id = _getText(entry, 'id') ?? '';
 
     String audioUrl = '';
@@ -206,7 +206,8 @@ class PodcastApiService {
     }
 
     DateTime pubDate = DateTime.now();
-    final updatedStr = _getText(entry, 'updated') ?? _getText(entry, 'published');
+    final updatedStr =
+        _getText(entry, 'updated') ?? _getText(entry, 'published');
     if (updatedStr != null) {
       pubDate = DateTime.tryParse(updatedStr) ?? DateTime.now();
     }
@@ -241,13 +242,23 @@ class PodcastApiService {
         final monthStr = parts[1].toLowerCase();
         final year = parts[2];
         final timeStr = parts[3];
-        
+
         const months = {
-          'jan': '01', 'feb': '02', 'mar': '03', 'apr': '04', 'may': '05', 'jun': '06',
-          'jul': '07', 'aug': '08', 'sep': '09', 'oct': '10', 'nov': '11', 'dec': '12'
+          'jan': '01',
+          'feb': '02',
+          'mar': '03',
+          'apr': '04',
+          'may': '05',
+          'jun': '06',
+          'jul': '07',
+          'aug': '08',
+          'sep': '09',
+          'oct': '10',
+          'nov': '11',
+          'dec': '12',
         };
         final month = months[monthStr] ?? '01';
-        
+
         final isoStr = '$year-$month-$day $timeStr';
         final parsed = DateTime.tryParse(isoStr);
         if (parsed != null) return parsed;
