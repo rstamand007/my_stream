@@ -56,11 +56,18 @@ class DownloadService {
 
       // Create filename from episode title and audio URL
       final extension = path.extension(Uri.parse(episode.audioUrl).path);
+      
+      // Sanitize both title and ID to ensure valid filename characters
       final sanitizedTitle = episode.title
           .replaceAll(RegExp(r'[^\w\s-]'), '')
           .replaceAll(RegExp(r'\s+'), '_');
-      final filename = '${episode.id}_$sanitizedTitle$extension';
+      final sanitizedId = episode.id
+          .replaceAll(RegExp(r'[^\w\s-]'), '_')
+          .replaceAll(RegExp(r'\s+'), '_');
+          
+      final filename = '${sanitizedId}_$sanitizedTitle$extension';
       final filePath = path.join(downloadsDir.path, filename);
+      logger.i('Downloading episode: $filePath');
 
       // Check if file already exists
       final file = File(filePath);
@@ -70,9 +77,17 @@ class DownloadService {
         return filePath;
       }
 
-      // Download file
+      // Download file with proper User-Agent headers
       final request = http.Request('GET', Uri.parse(episode.audioUrl));
+      request.headers.addAll({
+        'User-Agent':
+            'MyStreamPodcastPlayer/1.0.0 (https://github.com/rstamand007/my_stream)',
+        'Accept': '*/*',
+      });
+      
       final response = await request.send();
+
+      logger.d('Download response: ${response.statusCode}, Content-Type: ${response.headers['content-type']}, Length: ${response.contentLength}');
 
       if (response.statusCode != 200) {
         throw Exception('Failed to download: ${response.statusCode}');
