@@ -203,44 +203,22 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.replay_10_rounded, size: 40),
-                      iconSize: 36,
+                    NeumorphicIconButton(
+                      icon: Icons.replay_10_rounded,
+                      size: 60,
                       onPressed: provider.skipBackward,
-                      color: AppColors.textPrimary,
                     ),
-                    Container(
-                      width: 72,
-                      height: 72,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [AppColors.primary, AppColors.secondary],
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.4),
-                            blurRadius: 20,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-                      child: IconButton(
-                        icon: Icon(
-                          provider.isPlaying
-                              ? Icons.pause_rounded
-                              : Icons.play_arrow_rounded,
-                          color: Colors.white,
-                        ),
-                        iconSize: 40,
-                        onPressed: provider.togglePlayPause,
-                      ),
+                    NeumorphicIconButton(
+                      icon: provider.isPlaying
+                          ? Icons.pause_rounded
+                          : Icons.play_arrow_rounded,
+                      size: 84,
+                      onPressed: provider.togglePlayPause,
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.forward_30_rounded),
-                      iconSize: 36,
+                    NeumorphicIconButton(
+                      icon: Icons.forward_30_rounded,
+                      size: 60,
                       onPressed: provider.skipForward,
-                      color: AppColors.textPrimary,
                     ),
                   ],
                 ),
