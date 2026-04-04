@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:my_stream/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../providers/player_provider.dart';
+import '../widgets/neumorphic_icon_button.dart';
 import '../utils/constants.dart';
 import '../utils/formatters.dart';
 
@@ -21,6 +22,13 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: Center(
+          child: NeumorphicIconButton(
+            icon: Icons.arrow_back_rounded,
+            onPressed: () => Navigator.of(context).pop(),
+            tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+          ),
+        ),
         title: Text(l10n.nowPlaying),
         actions: [
           Consumer<PlayerProvider>(

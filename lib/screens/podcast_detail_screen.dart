@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../models/podcast.dart';
 import '../providers/podcast_provider.dart';
 import '../widgets/episode_tile.dart';
+import '../widgets/neumorphic_icon_button.dart';
 import '../utils/constants.dart';
 
 class PodcastDetailScreen extends StatefulWidget {
@@ -43,12 +44,25 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            // App bar with podcast artwork
+        child: RefreshIndicator(
+          onRefresh: () => context.read<PodcastProvider>().refreshEpisodes(
+                widget.podcast.id,
+                widget.podcast.feedUrl,
+              ),
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              // App bar with podcast artwork
             SliverAppBar(
               expandedHeight: 300,
               pinned: true,
+              leading: Center(
+                child: NeumorphicIconButton(
+                  icon: Icons.arrow_back_rounded,
+                  onPressed: () => Navigator.of(context).pop(),
+                  tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                ),
+              ),
               flexibleSpace: FlexibleSpaceBar(
                 background: Stack(
                   fit: StackFit.expand,
@@ -87,15 +101,20 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
               actions: [
                 Consumer<PodcastProvider>(
                   builder: (context, provider, child) {
-                    return IconButton(
-                      icon: const Icon(Icons.refresh),
-                      tooltip: l10n.refresh,
-                      onPressed: provider.isLoading
-                          ? null
-                          : () => provider.refreshEpisodes(
-                              widget.podcast.id,
-                              widget.podcast.feedUrl,
-                            ),
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: Center(
+                        child: NeumorphicIconButton(
+                          icon: Icons.refresh_rounded,
+                          tooltip: l10n.refresh,
+                          onPressed: provider.isLoading
+                              ? null
+                              : () => provider.refreshEpisodes(
+                                    widget.podcast.id,
+                                    widget.podcast.feedUrl,
+                                  ),
+                        ),
+                      ),
                     );
                   },
                 ),
@@ -259,6 +278,7 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

@@ -36,6 +36,13 @@ class EpisodeTile extends StatelessWidget {
                 ? AppColors.primary.withValues(alpha: 0.1)
                 : Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 4,
+                offset: const Offset(2, 2),
+              ),
+            ],
           ),
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(
