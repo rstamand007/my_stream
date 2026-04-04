@@ -177,6 +177,14 @@ class PodcastApiService {
       pubDate = _parseDate(pubDateStr);
     }
 
+    final artworkUrl =
+        item.findElements('itunes:image').firstOrNull?.getAttribute('href') ??
+        item
+            .findElements('media:content')
+            .where((e) => e.getAttribute('medium') == 'image')
+            .firstOrNull
+            ?.getAttribute('url');
+
     return Episode(
       id: guid,
       podcastId: podcastId,
@@ -185,6 +193,7 @@ class PodcastApiService {
       audioUrl: audioUrl,
       duration: duration,
       publishDate: pubDate,
+      artworkUrl: artworkUrl,
     );
   }
 
@@ -212,6 +221,12 @@ class PodcastApiService {
       pubDate = DateTime.tryParse(updatedStr) ?? DateTime.now();
     }
 
+    final artworkUrl = 
+        entry.findElements('itunes:image').firstOrNull?.getAttribute('href') ??
+        entry.findElements('link')
+            .where((e) => e.getAttribute('rel') == 'image' || e.getAttribute('rel') == 'preview')
+            .firstOrNull?.getAttribute('href');
+
     return Episode(
       id: id,
       podcastId: podcastId,
@@ -220,6 +235,7 @@ class PodcastApiService {
       audioUrl: audioUrl,
       duration: 0,
       publishDate: pubDate,
+      artworkUrl: artworkUrl,
     );
   }
 

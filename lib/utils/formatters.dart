@@ -47,4 +47,11 @@ class Formatters {
   static String formatSpeed(double speed) {
     return '${speed.toStringAsFixed(2)}x';
   }
+
+  // Strip HTML tags from a string
+  static String stripHtml(String htmlString) {
+    if (htmlString.isEmpty) return '';
+    final RegExp exp = RegExp(r"<[^>]*>", multiLine: true, caseSensitive: true);
+    return htmlString.replaceAll(exp, '').trim();
+  }
 }
