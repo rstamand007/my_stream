@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:my_stream/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/player_provider.dart';
+import '../providers/podcast_provider.dart';
+import '../widgets/neumorphic_icon_button.dart';
 import '../utils/constants.dart';
 import '../utils/formatters.dart';
 
@@ -21,6 +24,13 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: Center(
+          child: NeumorphicIconButton(
+            icon: Icons.arrow_back_rounded,
+            onPressed: () => Navigator.of(context).pop(),
+            tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+          ),
+        ),
         title: Text(l10n.nowPlaying),
         actions: [
           Consumer<PlayerProvider>(
@@ -99,7 +109,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
               children: [
                 const Spacer(),
 
-                // Artwork placeholder (large circle)
                 Container(
                   width: 280,
                   height: 280,
@@ -114,10 +123,38 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.podcasts,
-                    size: 120,
-                    color: AppColors.primary,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Artwork Image or Placeholder icon
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(140),
+                        child: _buildArtwork(context, episode),
+                      ),
+                      // Description Overlay
+                      Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: SingleChildScrollView(
+                          physics: const BouncingScrollPhysics(),
+                          child: Text(
+                            Formatters.stripHtml(episode.description),
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontSize: 13,
+                              height: 1.5,
+                              color: Colors.white,
+                              shadows: [
+                                const Shadow(
+                                  color: Colors.black,
+                                  blurRadius: 4,
+                                  offset: Offset(0, 1),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
@@ -195,44 +232,22 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.replay_10_rounded, size: 40),
-                      iconSize: 36,
+                    NeumorphicIconButton(
+                      icon: Icons.replay_10_rounded,
+                      size: 60,
                       onPressed: provider.skipBackward,
-                      color: AppColors.textPrimary,
                     ),
-                    Container(
-                      width: 72,
-                      height: 72,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [AppColors.primary, AppColors.secondary],
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.4),
-                            blurRadius: 20,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-                      child: IconButton(
-                        icon: Icon(
-                          provider.isPlaying
-                              ? Icons.pause_rounded
-                              : Icons.play_arrow_rounded,
-                          color: Colors.white,
-                        ),
-                        iconSize: 40,
-                        onPressed: provider.togglePlayPause,
-                      ),
+                    NeumorphicIconButton(
+                      icon: provider.isPlaying
+                          ? Icons.pause_rounded
+                          : Icons.play_arrow_rounded,
+                      size: 84,
+                      onPressed: provider.togglePlayPause,
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.forward_30_rounded),
-                      iconSize: 36,
+                    NeumorphicIconButton(
+                      icon: Icons.forward_30_rounded,
+                      size: 60,
                       onPressed: provider.skipForward,
-                      color: AppColors.textPrimary,
                     ),
                   ],
                 ),
@@ -242,6 +257,55 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildArtwork(BuildContext context, dynamic episode) {
+    // Try to get artwork from episode first
+    String? imageUrl = episode.artworkUrl;
+
+    // If not in episode, try to get it from the podcast
+    if (imageUrl == null || imageUrl.isEmpty) {
+      try {
+        final podcast = context
+            .read<PodcastProvider>()
+            .subscribedPodcasts
+            .firstWhere((p) => p.id == episode.podcastId);
+        imageUrl = podcast.artworkUrl;
+      } catch (_) {
+        // Podcast not found in subscribed list
+      }
+    }
+
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      return ColorFiltered(
+        colorFilter: ColorFilter.mode(
+          Colors.black.withValues(alpha: 0.4),
+          BlendMode.darken,
+        ),
+        child: CachedNetworkImage(
+          imageUrl: imageUrl,
+          width: 280,
+          height: 280,
+          fit: BoxFit.cover,
+          placeholder: (context, url) => const Center(
+            child: CircularProgressIndicator(),
+          ),
+          errorWidget: (context, url, error) => _buildPlaceholderIcon(),
+        ),
+      );
+    }
+
+    return _buildPlaceholderIcon();
+  }
+
+  Widget _buildPlaceholderIcon() {
+    return Center(
+      child: Icon(
+        Icons.podcasts,
+        size: 120,
+        color: AppColors.primary.withValues(alpha: 0.2),
       ),
     );
   }

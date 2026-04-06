@@ -3,6 +3,7 @@ import 'package:my_stream/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../providers/podcast_provider.dart';
 import '../widgets/podcast_card.dart';
+import '../widgets/neumorphic_icon_button.dart';
 import 'podcast_detail_screen.dart';
 import '../utils/constants.dart';
 
@@ -36,11 +37,17 @@ class _LibraryScreenState extends State<LibraryScreen> {
           style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: () {
-              context.read<PodcastProvider>().loadSubscribedPodcasts();
-            },
+          Padding(
+            padding: const EdgeInsets.only(right: 12.0),
+            child: Center(
+              child: NeumorphicIconButton(
+                icon: Icons.refresh_rounded,
+                onPressed: () {
+                  context.read<PodcastProvider>().loadSubscribedPodcasts();
+                },
+                tooltip: l10n.refresh,
+              ),
+            ),
           ),
         ],
       ),
