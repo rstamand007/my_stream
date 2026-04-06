@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_stream/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../providers/locale_provider.dart';
 import '../providers/theme_provider.dart';
 import '../utils/constants.dart';
@@ -137,11 +138,20 @@ class SettingsScreen extends StatelessWidget {
             context,
             title: l10n.about,
             children: [
-              _buildSettingTile(
-                context,
-                icon: Icons.info_outline_rounded,
-                title: l10n.version,
-                subtitle: '1.0.0',
+              FutureBuilder<PackageInfo>(
+                future: PackageInfo.fromPlatform(),
+                builder: (context, snapshot) {
+                  final version =
+                      snapshot.hasData
+                          ? '${snapshot.data!.version}+${snapshot.data!.buildNumber}'
+                          : '...';
+                  return _buildSettingTile(
+                    context,
+                    icon: Icons.info_outline_rounded,
+                    title: l10n.version,
+                    subtitle: version,
+                  );
+                },
               ),
               _buildSettingTile(
                 context,

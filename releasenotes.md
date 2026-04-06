@@ -1,5 +1,16 @@
 # Release Notes
 
+## [v1.0.2] - 2026-04-05
+### UI & Visual Experience
+- **New App Icon**: Replaced the default launcher icon with a modern, minimalist **blue wave design** in a square frame for a more professional look.
+- **Dynamic Episode Artwork**: Enhanced the **Now Playing** screen to display actual episode or podcast artwork instead of generic placeholders.
+- **Artwork Caching**: Integrated `CachedNetworkImage` for smooth, efficient loading and offline availability of episode covers.
+- **Description Overlay**: Refined the artwork overlay on the player screen to ensure show descriptions remain readable over diverse artwork colors.
+
+### Data & Metadata
+- **Enhanced RSS Parsing**: Updated the parsing engine to extract high-resolution `itunes:image` metadata from podcast feeds.
+- **Data Model Update**: Expanded the `Episode` model to support and persist artwork URLs across sessions.
+
 ## [v1.0.1] - 2026-03-22
 ### Bug Fixes
 - **Download Crash**: Fixed a critical issue where URL-based episode IDs caused crashes on Android due to invalid filename characters.
