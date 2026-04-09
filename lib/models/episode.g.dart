@@ -27,13 +27,14 @@ class EpisodeAdapter extends TypeAdapter<Episode> {
       isDownloaded: fields[7] as bool,
       localFilePath: fields[8] as String?,
       playbackPosition: fields[9] as int?,
+      artworkUrl: fields[10] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Episode obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -53,7 +54,9 @@ class EpisodeAdapter extends TypeAdapter<Episode> {
       ..writeByte(8)
       ..write(obj.localFilePath)
       ..writeByte(9)
-      ..write(obj.playbackPosition);
+      ..write(obj.playbackPosition)
+      ..writeByte(10)
+      ..write(obj.artworkUrl);
   }
 
   @override

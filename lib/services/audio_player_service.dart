@@ -13,13 +13,37 @@ class AudioPlayerService {
   MyStreamAudioHandler? _handler;
   Episode? _currentEpisode;
 
+  // Private getters for safer access
+  AudioPlayer get _player {
+    if (_handler == null) throw Exception('AudioHandler not initialized');
+    return _handler!.player;
+  }
+
+  MyStreamAudioHandler get _audioHandler {
+    if (_handler == null) throw Exception('AudioHandler not initialized');
+    return _handler!;
+  }
+
+  // Cached empty streams to avoid re-allocation
+  static final _emptyDurationStream = Stream<Duration>.empty();
+  static final _emptyNullableDurationStream = Stream<Duration?>.empty();
+  static final _emptyPlayerStateStream = Stream<PlayerState>.empty();
+  static final _emptyDoubleStream = Stream<double>.empty();
+
   // Getters
   Episode? get currentEpisode => _currentEpisode;
 
-  Stream<Duration> get positionStream => _handler?.player.positionStream ?? Stream.empty();
-  Stream<Duration?> get durationStream => _handler?.player.durationStream ?? Stream.empty();
-  Stream<PlayerState> get playerStateStream => _handler?.player.playerStateStream ?? Stream.empty();
-  Stream<double> get speedStream => _handler?.player.speedStream ?? Stream.empty();
+  Stream<Duration> get positionStream =>
+      _handler?.player.positionStream ?? _emptyDurationStream;
+
+  Stream<Duration?> get durationStream =>
+      _handler?.player.durationStream ?? _emptyNullableDurationStream;
+
+  Stream<PlayerState> get playerStateStream =>
+      _handler?.player.playerStateStream ?? _emptyPlayerStateStream;
+
+  Stream<double> get speedStream =>
+      _handler?.player.speedStream ?? _emptyDoubleStream;
 
   bool get isPlaying => _handler?.player.playing ?? false;
   Duration get position => _handler?.player.position ?? Duration.zero;
@@ -37,58 +61,48 @@ class AudioPlayerService {
   // Play episode
   Future<void> playEpisode(Episode episode, {Duration? startPosition}) async {
     logger.d('AudioPlayerService.playEpisode called for: ${episode.title}');
-    if (_handler == null) {
-      logger.e('AudioHandler is NULL in AudioPlayerService!');
-      return;
-    }
 
     try {
       final String url = episode.playbackUrl;
-      if (url.isEmpty) {
-        throw Exception('Episode has no audio URL');
-      }
+      if (url.isEmpty) throw Exception('Episode has no audio URL');
 
-      final String finalUrl = url.startsWith('http')
-          ? Uri.encodeFull(url)
-          : url;
-
+      final String finalUrl = url.startsWith('http') ? Uri.encodeFull(url) : url;
       logger.d('Final URL: $finalUrl');
 
       _currentEpisode = episode;
 
       // Update media item for the OS
-      logger.d('Adding MediaItem to handler');
-      _handler?.mediaItem.add(
+      _audioHandler.mediaItem.add(
         MediaItem(
           id: episode.id,
           title: episode.title,
           album: episode.podcastId,
-          duration: episode.duration > 0
-              ? Duration(seconds: episode.duration)
-              : null,
+          duration:
+              episode.duration > 0 ? Duration(seconds: episode.duration) : null,
           playable: true,
         ),
       );
 
       // Set audio source
-      logger.d('Setting player source');
       if (finalUrl.startsWith('http')) {
-        await _handler?.player.setUrl(finalUrl);
+        await _player.setUrl(finalUrl);
       } else {
-        await _handler?.player.setAudioSource(AudioSource.uri(Uri.file(finalUrl)));
+        await _player.setFilePath(finalUrl);
       }
 
       // Seek to saved position if available
-      if (startPosition != null) {
-        await _handler?.player.seek(startPosition);
-      } else if (episode.playbackPosition != null &&
-          episode.playbackPosition! > 0) {
-        await _handler?.player.seek(Duration(seconds: episode.playbackPosition!));
+      final seekTo =
+          startPosition ??
+          (episode.playbackPosition != null && episode.playbackPosition! > 0
+              ? Duration(seconds: episode.playbackPosition!)
+              : null);
+
+      if (seekTo != null) {
+        await _player.seek(seekTo);
       }
 
       // Start playback
-      logger.d('Starting playback');
-      await _handler?.play();
+      await _audioHandler.play();
       logger.d('Playback started');
     } catch (e) {
       logger.e('Error playing episode: ${episode.title}', error: e);
@@ -98,12 +112,7 @@ class AudioPlayerService {
 
   // Play/Pause toggle
   Future<void> togglePlayPause() async {
-    logger.d('AudioPlayerService.togglePlayPause');
-    if (_handler == null) {
-      logger.e('AudioHandler is NULL in togglePlayPause');
-      return;
-    }
-    if (_handler?.player.playing ?? false) {
+    if (_player.playing) {
       await pause();
     } else {
       await play();
@@ -111,53 +120,38 @@ class AudioPlayerService {
   }
 
   // Play
-  Future<void> play() async {
-    logger.d('AudioPlayerService.play');
-    await _handler?.play();
-  }
+  Future<void> play() => _audioHandler.play();
 
   // Pause
-  Future<void> pause() async {
-    logger.d('AudioPlayerService.pause');
-    await _handler?.pause();
-  }
+  Future<void> pause() => _audioHandler.pause();
 
   // Stop
   Future<void> stop() async {
-    await _handler?.stop();
+    await _audioHandler.stop();
     _currentEpisode = null;
   }
 
   // Seek to position
-  Future<void> seek(Duration position) async {
-    await _handler?.seek(position);
-  }
+  Future<void> seek(Duration position) => _audioHandler.seek(position);
 
   // Skip forward
   Future<void> skipForward() async {
-    if (_handler == null) return;
-    final newPosition = _handler!.player.position + AppDurations.skipForward;
-    final maxPosition = _handler!.player.duration ?? Duration.zero;
-    await _handler!.player.seek(newPosition > maxPosition ? maxPosition : newPosition);
+    final newPosition = _player.position + AppDurations.skipForward;
+    final maxPosition = _player.duration ?? Duration.zero;
+    await _player.seek(newPosition > maxPosition ? maxPosition : newPosition);
   }
 
   // Skip backward
   Future<void> skipBackward() async {
-    if (_handler == null) return;
-    final newPosition = _handler!.player.position - AppDurations.skipBackward;
-    await _handler!.player.seek(
+    final newPosition = _player.position - AppDurations.skipBackward;
+    await _player.seek(
       newPosition < Duration.zero ? Duration.zero : newPosition,
     );
   }
 
   // Set playback speed
-  Future<void> setSpeed(double speed) async {
-    await _handler?.setSpeed(speed);
-  }
+  Future<void> setSpeed(double speed) => _audioHandler.setSpeed(speed);
 
   // Dispose
-  Future<void> dispose() async {
-    await _handler?.customAction('dispose');
-  }
+  Future<void> dispose() => _audioHandler.customAction('dispose');
 }
-

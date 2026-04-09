@@ -24,6 +24,8 @@ class Episode {
   final String? localFilePath;
   @HiveField(9)
   final int? playbackPosition; // in seconds
+  @HiveField(10)
+  final String? artworkUrl;
 
   Episode({
     required this.id,
@@ -36,6 +38,7 @@ class Episode {
     this.isDownloaded = false,
     this.localFilePath,
     this.playbackPosition,
+    this.artworkUrl,
   });
 
   // Create from RSS feed item
@@ -51,6 +54,7 @@ class Episode {
           DateTime.tryParse(rss['pubDate'] ?? '') ??
           DateTime.tryParse(rss['pubDate']?.replaceFirst(' +0000', '') ?? '') ??
           DateTime.now(),
+      artworkUrl: rss['itunes:image']?['@href'],
     );
   }
 
@@ -67,6 +71,7 @@ class Episode {
       isDownloaded: map['isDownloaded'] == 1,
       localFilePath: map['localFilePath'],
       playbackPosition: map['playbackPosition'],
+      artworkUrl: map['artworkUrl'],
     );
   }
 
@@ -83,6 +88,7 @@ class Episode {
       'isDownloaded': isDownloaded ? 1 : 0,
       'localFilePath': localFilePath,
       'playbackPosition': playbackPosition,
+      'artworkUrl': artworkUrl,
     };
   }
 
@@ -98,6 +104,7 @@ class Episode {
     bool? isDownloaded,
     String? localFilePath,
     int? playbackPosition,
+    String? artworkUrl,
   }) {
     return Episode(
       id: id ?? this.id,
@@ -110,6 +117,7 @@ class Episode {
       isDownloaded: isDownloaded ?? this.isDownloaded,
       localFilePath: localFilePath ?? this.localFilePath,
       playbackPosition: playbackPosition ?? this.playbackPosition,
+      artworkUrl: artworkUrl ?? this.artworkUrl,
     );
   }
 

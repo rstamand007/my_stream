@@ -6,7 +6,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../models/podcast.dart';
 import '../providers/podcast_provider.dart';
 import '../widgets/episode_tile.dart';
-import '../utils/constants.dart';
+import '../widgets/neumorphic_icon_button.dart';
+import '../theme/app_theme.dart';
 
 class PodcastDetailScreen extends StatefulWidget {
   final Podcast podcast;
@@ -43,12 +44,25 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            // App bar with podcast artwork
+        child: RefreshIndicator(
+          onRefresh: () => context.read<PodcastProvider>().refreshEpisodes(
+                widget.podcast.id,
+                widget.podcast.feedUrl,
+              ),
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              // App bar with podcast artwork
             SliverAppBar(
               expandedHeight: 300,
               pinned: true,
+              leading: Center(
+                child: NeumorphicIconButton(
+                  icon: Icons.arrow_back_rounded,
+                  onPressed: () => Navigator.of(context).pop(),
+                  tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                ),
+              ),
               flexibleSpace: FlexibleSpaceBar(
                 background: Stack(
                   fit: StackFit.expand,
@@ -57,11 +71,11 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
                       imageUrl: widget.podcast.artworkUrl,
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
-                        color: AppColors.surface,
+                        color: Theme.of(context).colorScheme.surface,
                         child: const Center(child: CircularProgressIndicator()),
                       ),
                       errorWidget: (context, url, error) => Container(
-                        color: AppColors.surface,
+                        color: Theme.of(context).colorScheme.surface,
                         child: const Icon(Icons.podcasts, size: 40),
                       ),
                     ),
@@ -87,15 +101,20 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
               actions: [
                 Consumer<PodcastProvider>(
                   builder: (context, provider, child) {
-                    return IconButton(
-                      icon: const Icon(Icons.refresh),
-                      tooltip: l10n.refresh,
-                      onPressed: provider.isLoading
-                          ? null
-                          : () => provider.refreshEpisodes(
-                              widget.podcast.id,
-                              widget.podcast.feedUrl,
-                            ),
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: Center(
+                        child: NeumorphicIconButton(
+                          icon: Icons.refresh_rounded,
+                          tooltip: l10n.refresh,
+                          onPressed: provider.isLoading
+                              ? null
+                              : () => provider.refreshEpisodes(
+                                    widget.podcast.id,
+                                    widget.podcast.feedUrl,
+                                  ),
+                        ),
+                      ),
                     );
                   },
                 ),
@@ -185,9 +204,9 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: isSubscribed
-                                  ? AppColors.success
-                                  : AppColors.primary,
-                              foregroundColor: Colors.white,
+                                  ? (Theme.of(context).extension<AppThemeExtension>()?.success ?? Colors.green)
+                                  : Theme.of(context).colorScheme.primary,
+                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -259,6 +278,7 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

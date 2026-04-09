@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/episode.dart';
 import '../providers/player_provider.dart';
 import '../providers/download_provider.dart';
-import '../utils/constants.dart';
+import '../theme/app_theme.dart';
 import '../utils/formatters.dart';
 import 'package:my_stream/l10n/app_localizations.dart';
 import '../screens/now_playing_screen.dart';
@@ -33,9 +33,16 @@ class EpisodeTile extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           decoration: BoxDecoration(
             color: isCurrentEpisode
-                ? AppColors.primary.withValues(alpha: 0.1)
+                ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
                 : Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 4,
+                offset: const Offset(2, 2),
+              ),
+            ],
           ),
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(
@@ -47,7 +54,7 @@ class EpisodeTile extends StatelessWidget {
               episode.title,
               style: TextStyle(
                 color: isCurrentEpisode
-                    ? AppColors.primary
+                    ? Theme.of(context).colorScheme.primary
                     : Theme.of(context).textTheme.bodyLarge?.color,
                 fontWeight: isCurrentEpisode
                     ? FontWeight.bold
@@ -70,9 +77,9 @@ class EpisodeTile extends StatelessWidget {
                   const SizedBox(height: 8),
                   LinearProgressIndicator(
                     value: downloadProgress,
-                    backgroundColor: AppColors.surfaceLight,
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      AppColors.primary,
+                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Theme.of(context).colorScheme.primary,
                     ),
                   ),
                 ],
@@ -112,13 +119,13 @@ class EpisodeTile extends StatelessWidget {
   ) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: Theme.of(context).colorScheme.primary,
         shape: BoxShape.circle,
       ),
       child: IconButton(
         icon: Icon(
           isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.onPrimary,
         ),
         onPressed: () {
           if (playerProvider.currentEpisode?.id == episode.id) {
@@ -149,7 +156,7 @@ class EpisodeTile extends StatelessWidget {
       icon: Icon(
         isDownloaded ? Icons.download_done_rounded : Icons.download_rounded,
         color: isDownloaded
-            ? AppColors.success
+            ? (Theme.of(context).extension<AppThemeExtension>()?.success ?? Colors.green)
             : Theme.of(context).iconTheme.color,
       ),
       onPressed: () {
