@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../utils/constants.dart';
 
 class NeumorphicIconButton extends StatefulWidget {
   final IconData icon;
@@ -45,8 +44,8 @@ class _NeumorphicIconButtonState extends State<NeumorphicIconButton> {
 
     // Gradient colors
     final gradientColors = [
-      AppColors.primary,
-      AppColors.secondary,
+      Theme.of(context).colorScheme.primary,
+      Theme.of(context).colorScheme.secondary,
     ];
 
     return GestureDetector(

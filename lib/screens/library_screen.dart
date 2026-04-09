@@ -5,7 +5,6 @@ import '../providers/podcast_provider.dart';
 import '../widgets/podcast_card.dart';
 import '../widgets/neumorphic_icon_button.dart';
 import 'podcast_detail_screen.dart';
-import '../utils/constants.dart';
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
@@ -34,7 +33,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
       appBar: AppBar(
         title: Text(
           l10n.myLibrary,
-          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+          style: Theme.of(context).textTheme.headlineMedium,
         ),
         actions: [
           Padding(
@@ -62,10 +61,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.library_music_outlined,
                     size: 80,
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).textTheme.bodySmall?.color,
                   ),
                   const SizedBox(height: 16),
                   Text(

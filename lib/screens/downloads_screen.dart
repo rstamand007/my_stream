@@ -3,7 +3,6 @@ import 'package:my_stream/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../providers/download_provider.dart';
 import '../widgets/episode_tile.dart';
-import '../utils/constants.dart';
 import '../utils/formatters.dart';
 
 class DownloadsScreen extends StatelessWidget {
@@ -17,7 +16,7 @@ class DownloadsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           l10n.downloads,
-          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+          style: Theme.of(context).textTheme.headlineMedium,
         ),
         actions: [
           IconButton(
@@ -84,10 +83,10 @@ class DownloadsScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.download_outlined,
                     size: 80,
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -127,9 +126,9 @@ class DownloadsScreen extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.storage_rounded,
-                            color: AppColors.primary,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                           const SizedBox(width: 12),
                           Column(
@@ -195,7 +194,7 @@ class DownloadsScreen extends StatelessWidget {
             },
             child: Text(
               l10n.clearAll,
-              style: const TextStyle(color: AppColors.error),
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ),
         ],
