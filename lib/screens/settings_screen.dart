@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../providers/locale_provider.dart';
 import '../providers/theme_provider.dart';
-import '../utils/constants.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -19,7 +18,7 @@ class SettingsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           l10n.settings,
-          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+          style: Theme.of(context).textTheme.headlineMedium,
         ),
       ),
       body: ListView(
@@ -84,9 +83,9 @@ class SettingsScreen extends StatelessWidget {
                 trailing: DropdownButton<ThemeMode>(
                   value: themeProvider.themeMode,
                   underline: const SizedBox(),
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.arrow_drop_down_rounded,
-                    color: AppColors.primary,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   onChanged: (ThemeMode? newValue) {
                     if (newValue != null) {
@@ -116,9 +115,9 @@ class SettingsScreen extends StatelessWidget {
                 trailing: DropdownButton<String>(
                   value: localeProvider.locale?.languageCode ?? 'en',
                   underline: const SizedBox(),
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.arrow_drop_down_rounded,
-                    color: AppColors.primary,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   onChanged: (String? newValue) {
                     if (newValue != null) {
@@ -180,10 +179,9 @@ class SettingsScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
           child: Text(
             title,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.primary,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
-              fontSize: 12,
               letterSpacing: 1.2,
             ),
           ),
@@ -202,7 +200,7 @@ class SettingsScreen extends StatelessWidget {
     Widget? trailing,
   }) {
     return ListTile(
-      leading: Icon(icon, color: AppColors.primary),
+      leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
       title: Text(title),
       subtitle: subtitle != null ? Text(subtitle) : null,
       trailing:

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/player_provider.dart';
 import '../screens/now_playing_screen.dart';
-import '../utils/constants.dart';
 import '../utils/formatters.dart';
 
 class MiniPlayer extends StatelessWidget {
@@ -19,15 +18,17 @@ class MiniPlayer extends StatelessWidget {
         if (provider.hasError) {
           return Container(
             height: 80,
-            color: AppColors.error.withValues(alpha: 0.1),
+            color: Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
             child: ListTile(
-              leading: const Icon(
+              leading: Icon(
                 Icons.error_outline_rounded,
-                color: AppColors.error,
+                color: Theme.of(context).colorScheme.error,
               ),
-              title: const Text(
+              title: Text(
                 'Playback Error',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               subtitle: Text(
                 provider.error!,
@@ -68,9 +69,9 @@ class MiniPlayer extends StatelessWidget {
                 // Progress bar
                 LinearProgressIndicator(
                   value: provider.progress,
-                  backgroundColor: AppColors.surfaceLight,
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    AppColors.primary,
+                  backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).colorScheme.primary,
                   ),
                   minHeight: 2,
                 ),
@@ -117,8 +118,8 @@ class MiniPlayer extends StatelessWidget {
                             ),
                             const SizedBox(width: 8),
                             Container(
-                              decoration: const BoxDecoration(
-                                color: AppColors.primary,
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary,
                                 shape: BoxShape.circle,
                               ),
                               child: IconButton(
@@ -126,7 +127,7 @@ class MiniPlayer extends StatelessWidget {
                                   provider.isPlaying
                                       ? Icons.pause_rounded
                                       : Icons.play_arrow_rounded,
-                                  color: Colors.white,
+                                  color: Theme.of(context).colorScheme.onPrimary,
                                 ),
                                 onPressed: provider.togglePlayPause,
                               ),

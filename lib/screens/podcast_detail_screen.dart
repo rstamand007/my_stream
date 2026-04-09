@@ -7,7 +7,7 @@ import '../models/podcast.dart';
 import '../providers/podcast_provider.dart';
 import '../widgets/episode_tile.dart';
 import '../widgets/neumorphic_icon_button.dart';
-import '../utils/constants.dart';
+import '../theme/app_theme.dart';
 
 class PodcastDetailScreen extends StatefulWidget {
   final Podcast podcast;
@@ -71,11 +71,11 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
                       imageUrl: widget.podcast.artworkUrl,
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
-                        color: AppColors.surface,
+                        color: Theme.of(context).colorScheme.surface,
                         child: const Center(child: CircularProgressIndicator()),
                       ),
                       errorWidget: (context, url, error) => Container(
-                        color: AppColors.surface,
+                        color: Theme.of(context).colorScheme.surface,
                         child: const Icon(Icons.podcasts, size: 40),
                       ),
                     ),
@@ -204,9 +204,9 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: isSubscribed
-                                  ? AppColors.success
-                                  : AppColors.primary,
-                              foregroundColor: Colors.white,
+                                  ? (Theme.of(context).extension<AppThemeExtension>()?.success ?? Colors.green)
+                                  : Theme.of(context).colorScheme.primary,
+                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),

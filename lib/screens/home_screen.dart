@@ -6,7 +6,6 @@ import 'search_screen.dart';
 import 'downloads_screen.dart';
 import 'settings_screen.dart';
 import '../widgets/mini_player.dart';
-import '../utils/constants.dart';
 import '../providers/podcast_provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -40,15 +39,18 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
               child: Container(
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [AppColors.primary, AppColors.secondary],
+                    colors: [
+                      Theme.of(context).colorScheme.primary,
+                      Theme.of(context).colorScheme.secondary,
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(40),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.4),
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),

@@ -5,7 +5,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/player_provider.dart';
 import '../providers/podcast_provider.dart';
 import '../widgets/neumorphic_icon_button.dart';
-import '../utils/constants.dart';
 import '../utils/formatters.dart';
 
 class NowPlayingScreen extends StatefulWidget {
@@ -47,9 +46,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                         child: Row(
                           children: [
                             if (provider.speed == speed)
-                              const Icon(
+                              Icon(
                                 Icons.check_rounded,
-                                color: AppColors.primary,
+                                color: Theme.of(context).colorScheme.primary,
                                 size: 20,
                               )
                             else
@@ -75,10 +74,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.error_outline_rounded,
                       size: 60,
-                      color: AppColors.error,
+                      color: Theme.of(context).colorScheme.error,
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -113,11 +112,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                   width: 280,
                   height: 280,
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: Theme.of(context).colorScheme.surface,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.3),
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                         blurRadius: 30,
                         spreadRadius: 5,
                       ),
@@ -193,8 +192,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                         onChanged: (value) {
                           provider.seek(Duration(seconds: value.toInt()));
                         },
-                        activeColor: AppColors.primary,
-                        inactiveColor: AppColors.surfaceLight,
+                        activeColor: Theme.of(context).colorScheme.primary,
+                        inactiveColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                       ),
                     ),
                     Padding(
@@ -206,8 +205,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                             Formatters.formatDuration(
                               provider.position.inSeconds,
                             ),
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               fontSize: 12,
                             ),
                           ),
@@ -215,8 +213,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                             Formatters.formatDuration(
                               provider.duration.inSeconds,
                             ),
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               fontSize: 12,
                             ),
                           ),
@@ -305,7 +302,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       child: Icon(
         Icons.podcasts,
         size: 120,
-        color: AppColors.primary.withValues(alpha: 0.2),
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
       ),
     );
   }

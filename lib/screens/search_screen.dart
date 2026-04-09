@@ -135,7 +135,7 @@ class _SearchScreenState extends State<SearchScreen> {
       appBar: AppBar(
         title: Text(
           l10n.searchPodcasts,
-          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+          style: Theme.of(context).textTheme.headlineMedium,
         ),
       ),
       body: Column(
@@ -181,10 +181,10 @@ class _SearchScreenState extends State<SearchScreen> {
                       flex: 1,
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.public_rounded,
                             size: 20,
-                            color: AppColors.textSecondary,
+                            color: Theme.of(context).textTheme.bodySmall?.color,
                           ),
                           const SizedBox(width: 8),
                           Expanded(
@@ -224,10 +224,10 @@ class _SearchScreenState extends State<SearchScreen> {
                       flex: 1,
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.sort_rounded,
                             size: 20,
-                            color: AppColors.textSecondary,
+                            color: Theme.of(context).textTheme.bodySmall?.color,
                           ),
                           const SizedBox(width: 8),
                           Expanded(
@@ -262,10 +262,10 @@ class _SearchScreenState extends State<SearchScreen> {
                 // Filters Row 2: Language
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.language_rounded,
                       size: 20,
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).textTheme.bodySmall?.color,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -311,10 +311,10 @@ class _SearchScreenState extends State<SearchScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.search_rounded,
                           size: 80,
-                          color: AppColors.textSecondary,
+                          color: Theme.of(context).textTheme.bodySmall?.color,
                         ),
                         const SizedBox(height: 16),
                         Text(
@@ -336,10 +336,10 @@ class _SearchScreenState extends State<SearchScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.search_off_rounded,
                           size: 80,
-                          color: AppColors.textSecondary,
+                          color: Theme.of(context).textTheme.bodySmall?.color,
                         ),
                         const SizedBox(height: 16),
                         Text(
