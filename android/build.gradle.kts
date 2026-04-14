@@ -3,6 +3,25 @@ allprojects {
         google()
         mavenCentral()
     }
+
+    // Force all plugins/subprojects to use Java 17, suppressing
+    // "source/target value 8 is obsolete" compiler warnings.
+    plugins.withId("com.android.library") {
+        extensions.configure<com.android.build.gradle.LibraryExtension> {
+            compileOptions {
+                sourceCompatibility = JavaVersion.VERSION_17
+                targetCompatibility = JavaVersion.VERSION_17
+            }
+        }
+    }
+    plugins.withId("com.android.application") {
+        extensions.configure<com.android.build.gradle.AppExtension> {
+            compileOptions {
+                sourceCompatibility = JavaVersion.VERSION_17
+                targetCompatibility = JavaVersion.VERSION_17
+            }
+        }
+    }
 }
 
 val newBuildDir: Directory =
