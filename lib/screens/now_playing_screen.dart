@@ -116,7 +116,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.3),
                         blurRadius: 30,
                         spreadRadius: 5,
                       ),
@@ -138,18 +140,19 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                           child: Text(
                             Formatters.stripHtml(episode.description),
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontSize: 13,
-                              height: 1.5,
-                              color: Colors.white,
-                              shadows: [
-                                const Shadow(
-                                  color: Colors.black,
-                                  blurRadius: 4,
-                                  offset: Offset(0, 1),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  fontSize: 13,
+                                  height: 1.5,
+                                  color: Colors.white,
+                                  shadows: [
+                                    const Shadow(
+                                      color: Colors.black,
+                                      blurRadius: 4,
+                                      offset: Offset(0, 1),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
                           ),
                         ),
                       ),
@@ -193,7 +196,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                           provider.seek(Duration(seconds: value.toInt()));
                         },
                         activeColor: Theme.of(context).colorScheme.primary,
-                        inactiveColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                        inactiveColor: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest,
                       ),
                     ),
                     Padding(
@@ -205,17 +210,17 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                             Formatters.formatDuration(
                               provider.position.inSeconds,
                             ),
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              fontSize: 12,
-                            ),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodySmall?.copyWith(fontSize: 12),
                           ),
                           Text(
                             Formatters.formatDuration(
                               provider.duration.inSeconds,
                             ),
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              fontSize: 12,
-                            ),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodySmall?.copyWith(fontSize: 12),
                           ),
                         ],
                       ),
@@ -286,9 +291,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
           width: 280,
           height: 280,
           fit: BoxFit.cover,
-          placeholder: (context, url) => const Center(
-            child: CircularProgressIndicator(),
-          ),
+          placeholder: (context, url) =>
+              const Center(child: CircularProgressIndicator()),
           errorWidget: (context, url, error) => _buildPlaceholderIcon(),
         ),
       );
