@@ -7,7 +7,11 @@ import '../utils/logger.dart';
 /// This class bridges the Flutter app with the OS media notification and
 /// lock-screen controls.
 class MyStreamAudioHandler extends BaseAudioHandler {
-  final AudioPlayer player = AudioPlayer();
+  final AudioPlayer player = AudioPlayer(
+    handleInterruptions: false,
+  );
+
+  bool _playInterrupted = false;
 
   MyStreamAudioHandler() {
     logger.d('MyStreamAudioHandler constructor called');
@@ -17,10 +21,48 @@ class MyStreamAudioHandler extends BaseAudioHandler {
   Future<void> _init() async {
     try {
       logger.d('MyStreamAudioHandler._init() starting');
-      // Configure audio session for music playback
+      // Configure audio session for speech/podcast playback
       final session = await AudioSession.instance;
-      await session.configure(const AudioSessionConfiguration.music());
-      logger.d('AudioSession configured');
+      await session.configure(const AudioSessionConfiguration.speech());
+      logger.d('AudioSession configured for speech');
+
+      // Listen to audio focus and system interruptions manually
+      session.interruptionEventStream.listen((event) async {
+        logger.d('Audio session interruption event: begin=${event.begin}, type=${event.type}');
+        if (event.begin) {
+          // Interruption began (e.g. phone call, SMS notification, navigation)
+          switch (event.type) {
+            case AudioInterruptionType.duck:
+            case AudioInterruptionType.pause:
+            case AudioInterruptionType.unknown:
+              if (player.playing) {
+                logger.d('Player is playing, pausing due to interruption');
+                _playInterrupted = true;
+                await player.pause();
+              }
+              break;
+          }
+        } else {
+          // Interruption ended (transient focus regained)
+          switch (event.type) {
+            case AudioInterruptionType.duck:
+            case AudioInterruptionType.pause:
+            case AudioInterruptionType.unknown:
+              if (_playInterrupted) {
+                logger.d('Resuming playback after interruption ended');
+                _playInterrupted = false;
+                await play();
+              }
+              break;
+          }
+        }
+      });
+
+      // Handle headphone unplugged (Becoming noisy)
+      session.becomingNoisyEventStream.listen((_) async {
+        logger.d('Audio becoming noisy (headphones unplugged), pausing playback');
+        await pause();
+      });
 
       // Broadcast playback state changes to the OS
       player.playbackEventStream.map(_transformEvent).pipe(playbackState);
@@ -39,16 +81,23 @@ class MyStreamAudioHandler extends BaseAudioHandler {
   }
 
   @override
-  Future<void> play() => player.play();
+  Future<void> play() {
+    _playInterrupted = false;
+    return player.play();
+  }
 
   @override
-  Future<void> pause() => player.pause();
+  Future<void> pause() {
+    _playInterrupted = false;
+    return player.pause();
+  }
 
   @override
   Future<void> seek(Duration position) => player.seek(position);
 
   @override
   Future<void> stop() async {
+    _playInterrupted = false;
     await player.stop();
     return super.stop();
   }
