@@ -7,6 +7,7 @@ import 'package:my_stream/models/podcast.dart';
 import 'package:my_stream/models/episode.dart';
 import 'package:my_stream/l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:my_stream/widgets/neumorphic_icon_button.dart';
 
 class MockPodcastProvider extends ChangeNotifier implements PodcastProvider {
   bool _isLoading = false;
@@ -91,7 +92,7 @@ void main() {
     await tester.pumpWidget(createWidgetUnderTest());
     await tester.pump(const Duration(milliseconds: 500));
 
-    final refreshButton = find.byIcon(Icons.refresh);
+    final refreshButton = find.byIcon(Icons.refresh_rounded);
     expect(refreshButton, findsOneWidget);
 
     await tester.tap(refreshButton);
@@ -107,7 +108,7 @@ void main() {
 
     // The DateFormat.yMMMd().add_Hm() for Feb 27, 2026 10:00
     // "Feb 27, 2026 10:00" (English)
-    expect(find.byIcon(Icons.refresh), findsOneWidget);
+    expect(find.byIcon(Icons.refresh_rounded), findsOneWidget);
     expect(find.textContaining('2026'), findsOneWidget);
   });
 
@@ -141,10 +142,10 @@ void main() {
     mockProvider.setLoading(true);
     await tester.pump();
 
-    final refreshButton = tester.widget<IconButton>(
+    final refreshButton = tester.widget<NeumorphicIconButton>(
       find.ancestor(
-        of: find.byIcon(Icons.refresh),
-        matching: find.byType(IconButton),
+        of: find.byIcon(Icons.refresh_rounded),
+        matching: find.byType(NeumorphicIconButton),
       ),
     );
     expect(refreshButton.onPressed, isNull);

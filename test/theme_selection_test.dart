@@ -67,6 +67,11 @@ void main() {
     await tester.pumpWidget(createWidgetUnderTest());
     await tester.pumpAndSettle();
 
+    // Scroll dropdown into view
+    final dropdownFinder = find.byType(DropdownButton<ThemeMode>);
+    await tester.scrollUntilVisible(dropdownFinder, 100.0);
+    await tester.pumpAndSettle();
+
     // Verify initial value is System
     expect(find.text('System'), findsOneWidget);
 
