@@ -40,20 +40,19 @@ class PlayerProvider with ChangeNotifier {
   }
 
   // Autoplay hook
-  Episode? Function()? onEpisodeEnded;
+  Future<void> Function()? onEpisodeEnded;
 
   void _setupListeners() {
     // Listen to player state changes
-    _audioService.playerStateStream.listen((state) {
+    _audioService.playerStateStream.listen((state) async {
       _isPlaying = state.playing;
 
       // Handle completion: transition to stop state
       if (state.processingState == ProcessingState.completed) {
-        final nextEpisode = onEpisodeEnded?.call();
-        if (nextEpisode != null) {
-          playEpisode(nextEpisode);
+        if (onEpisodeEnded != null) {
+          await onEpisodeEnded!();
         } else {
-          stop();
+          await stop();
         }
       } else {
         notifyListeners();

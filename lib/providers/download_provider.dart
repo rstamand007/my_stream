@@ -8,7 +8,7 @@ import '../services/download_service.dart';
 import '../services/database_service.dart';
 import '../utils/logger.dart';
 
-class DownloadProvider with ChangeNotifier {
+class DownloadProvider with ChangeNotifier, WidgetsBindingObserver {
   final DownloadService _downloadService = DownloadService.instance;
   final DatabaseService _db = DatabaseService.instance;
 
@@ -60,7 +60,22 @@ class DownloadProvider with ChangeNotifier {
 
   // Initialize
   Future<void> init() async {
+    WidgetsBinding.instance.addObserver(this);
     await loadDownloadedEpisodes();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      logger.d('App resumed, reloading downloaded episodes');
+      loadDownloadedEpisodes();
+    }
   }
 
   // Load downloaded episodes from database

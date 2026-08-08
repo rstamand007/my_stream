@@ -89,9 +89,9 @@ class MyStreamApp extends StatelessWidget {
           final playerProvider = context.read<PlayerProvider>();
           final downloadProvider = context.read<DownloadProvider>();
 
-          playerProvider.onEpisodeEnded = () {
+          playerProvider.onEpisodeEnded = () async {
             final currentEpisode = playerProvider.currentEpisode;
-            if (currentEpisode == null) return null;
+            if (currentEpisode == null) return;
 
             final downloads = downloadProvider.downloadedEpisodes;
             final currentIndex = downloads.indexWhere(
@@ -105,14 +105,16 @@ class MyStreamApp extends StatelessWidget {
               nextEpisode = downloads[currentIndex + 1];
             }
 
-            // If it was a downloaded episode, delete it from storage and the list
-            if (currentIndex != -1) {
-              // We use a microtask to avoid triggering provider updates while 
-              // the player state listener is still processing.
-              Future.microtask(() => downloadProvider.deleteDownload(currentEpisode));
+            if (nextEpisode != null) {
+              await playerProvider.playEpisode(nextEpisode);
+            } else {
+              await playerProvider.stop();
             }
 
-            return nextEpisode;
+            // If it was a downloaded episode, delete it from storage and the list
+            if (currentIndex != -1) {
+              await downloadProvider.deleteDownload(currentEpisode);
+            }
           };
 
           return Consumer2<LocaleProvider, ThemeProvider>(
