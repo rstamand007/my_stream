@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as path;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/episode.dart';
 import '../services/download_service.dart';
 import '../services/database_service.dart';
@@ -36,6 +37,17 @@ class DownloadProvider with ChangeNotifier {
     final item = _downloadedEpisodes.removeAt(oldIndex);
     _downloadedEpisodes.insert(newIndex, item);
     notifyListeners();
+    _saveOrder();
+  }
+
+  Future<void> _saveOrder() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final currentOrder = _downloadedEpisodes.map((e) => e.id).toList();
+      await prefs.setStringList('download_playlist_order', currentOrder);
+    } catch (e) {
+      logger.e('Error saving download order', error: e);
+    }
   }
 
   bool isDownloading(String episodeId) {
@@ -54,11 +66,46 @@ class DownloadProvider with ChangeNotifier {
   // Load downloaded episodes from database
   Future<void> loadDownloadedEpisodes() async {
     try {
-      _downloadedEpisodes = await _db.getDownloadedEpisodes();
+      final episodes = await _db.getDownloadedEpisodes();
+      
+      final prefs = await SharedPreferences.getInstance();
+      final savedOrder = prefs.getStringList('download_playlist_order') ?? [];
+      
+      episodes.sort((a, b) {
+        final indexA = savedOrder.indexOf(a.id);
+        final indexB = savedOrder.indexOf(b.id);
+        
+        if (indexA != -1 && indexB != -1) {
+          return indexA.compareTo(indexB);
+        } else if (indexA != -1) {
+          return 1; // b is new, place it first
+        } else if (indexB != -1) {
+          return -1; // a is new, place it first
+        } else {
+          return b.publishDate.compareTo(a.publishDate); // both new
+        }
+      });
+      
+      _downloadedEpisodes = episodes;
+      
+      // Clean up saved order to only include currently downloaded episodes
+      final currentOrder = _downloadedEpisodes.map((e) => e.id).toList();
+      if (!_areListsEqual(savedOrder, currentOrder)) {
+        await prefs.setStringList('download_playlist_order', currentOrder);
+      }
+      
       notifyListeners();
     } catch (e) {
       logger.e('Error loading downloaded episodes', error: e);
     }
+  }
+
+  bool _areListsEqual(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
   }
 
   // Download episode
