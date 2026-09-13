@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'home_screen.dart';
+import '../providers/podcast_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -30,6 +32,14 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _navigateToHome() async {
     await Future.delayed(const Duration(seconds: 3));
+    if (mounted) {
+      final podcastProvider = context.read<PodcastProvider>();
+      await podcastProvider.loadSubscribedPodcasts();
+
+      for (final podcast in podcastProvider.subscribedPodcasts) {
+        await podcastProvider.refreshEpisodes(podcast.id, podcast.feedUrl);
+      }
+    }
     if (mounted) {
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
@@ -94,7 +104,9 @@ class _SplashScreenState extends State<SplashScreen>
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.5)),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.5),
+                    ),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -106,9 +118,18 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 ),
                 const SizedBox(height: 100),
-                const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
-                  strokeWidth: 2,
+                Consumer<PodcastProvider>(
+                  builder: (context, provider, child) {
+                    return provider.isLoading ||
+                            provider.subscribedPodcasts.isEmpty
+                        ? const CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white70,
+                            ),
+                            strokeWidth: 2,
+                          )
+                        : const SizedBox.shrink();
+                  },
                 ),
               ],
             ),
