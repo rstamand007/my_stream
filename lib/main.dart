@@ -7,6 +7,7 @@ import 'providers/player_provider.dart';
 import 'providers/download_provider.dart';
 import 'providers/locale_provider.dart';
 import 'providers/theme_provider.dart';
+import 'providers/playlist_provider.dart';
 import 'theme/app_theme.dart';
 import 'models/episode.dart';
 import 'screens/splash_screen.dart';
@@ -80,6 +81,12 @@ class MyStreamApp extends StatelessWidget {
             return DownloadProvider()..init();
           },
         ),
+        ChangeNotifierProvider(
+          create: (_) {
+            logger.d('Initializing PlaylistProvider');
+            return PlaylistProvider()..init();
+          },
+        ),
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
@@ -88,8 +95,19 @@ class MyStreamApp extends StatelessWidget {
           // Wire up autoplay logic
           final playerProvider = context.read<PlayerProvider>();
           final downloadProvider = context.read<DownloadProvider>();
+          final playlistProvider = context.read<PlaylistProvider>();
+
+          playerProvider.onPlaybackPositionChanged =
+              playlistProvider.updatePlaybackPosition;
 
           playerProvider.onEpisodeEnded = () async {
+            final hadPlaybackQueue = playerProvider.hasPlaybackQueue;
+            if (await playerProvider.playNextQueuedEpisode()) return;
+            if (hadPlaybackQueue) {
+              await playerProvider.stop();
+              return;
+            }
+
             final currentEpisode = playerProvider.currentEpisode;
             if (currentEpisode == null) return;
 

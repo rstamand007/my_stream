@@ -1,12 +1,14 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/podcast.dart';
 import '../models/episode.dart';
+import '../models/playlist.dart';
 
 class DatabaseService {
   static final DatabaseService instance = DatabaseService._internal();
 
   static const String podcastBoxName = 'podcasts';
   static const String episodeBoxName = 'episodes';
+  static const String playlistBoxName = 'playlists';
 
   DatabaseService._internal();
 
@@ -14,6 +16,8 @@ class DatabaseService {
       Hive.box<Podcast>(podcastBoxName);
   Future<Box<Episode>> get episodeBox async =>
       Hive.box<Episode>(episodeBoxName);
+  Future<Box<Playlist>> get playlistBox async =>
+      Hive.box<Playlist>(playlistBoxName);
 
   Future<void> init() async {
     if (!Hive.isAdapterRegistered(0)) {
@@ -22,9 +26,13 @@ class DatabaseService {
     if (!Hive.isAdapterRegistered(1)) {
       Hive.registerAdapter(EpisodeAdapter());
     }
+    if (!Hive.isAdapterRegistered(2)) {
+      Hive.registerAdapter(PlaylistAdapter());
+    }
 
     await Hive.openBox<Podcast>(podcastBoxName);
     await Hive.openBox<Episode>(episodeBoxName);
+    await Hive.openBox<Playlist>(playlistBoxName);
   }
 
   // Podcast CRUD operations
@@ -88,6 +96,12 @@ class DatabaseService {
       ..sort((a, b) => b.publishDate.compareTo(a.publishDate));
   }
 
+  Future<List<Episode>> getAllEpisodes() async {
+    final box = await episodeBox;
+    return box.values.toList()
+      ..sort((a, b) => b.publishDate.compareTo(a.publishDate));
+  }
+
   Future<Episode?> getEpisode(String id) async {
     final box = await episodeBox;
     return box.get(id);
@@ -100,6 +114,26 @@ class DatabaseService {
 
   Future<void> deleteEpisode(String id) async {
     final box = await episodeBox;
+    await box.delete(id);
+  }
+
+  // Playlist CRUD operations
+  Future<List<Playlist>> getPlaylists() async {
+    final box = await playlistBox;
+    return box.values.toList();
+  }
+
+  Future<void> insertPlaylist(Playlist playlist) async {
+    final box = await playlistBox;
+    await box.put(playlist.id, playlist);
+  }
+
+  Future<void> updatePlaylist(Playlist playlist) async {
+    await insertPlaylist(playlist);
+  }
+
+  Future<void> deletePlaylist(String id) async {
+    final box = await playlistBox;
     await box.delete(id);
   }
 

@@ -10,10 +10,16 @@ import '../screens/now_playing_screen.dart';
 
 class EpisodeTile extends StatelessWidget {
   final Episode episode;
+  final int? playbackPosition;
+  final VoidCallback? onPlay;
+  final Widget? dragHandle;
 
   const EpisodeTile({
     super.key,
     required this.episode,
+    this.playbackPosition,
+    this.onPlay,
+    this.dragHandle,
   });
 
   @override
@@ -77,7 +83,9 @@ class EpisodeTile extends StatelessWidget {
                   const SizedBox(height: 8),
                   LinearProgressIndicator(
                     value: downloadProgress,
-                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
                     valueColor: AlwaysStoppedAnimation<Color>(
                       Theme.of(context).colorScheme.primary,
                     ),
@@ -88,6 +96,20 @@ class EpisodeTile extends StatelessWidget {
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                ?dragHandle,
+                if (playbackPosition != null && playbackPosition! > 0) ...[
+                  Icon(
+                    Icons.history_rounded,
+                    size: 14,
+                    color: Theme.of(context).textTheme.bodySmall?.color,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    Formatters.formatDuration(playbackPosition!),
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(width: 4),
+                ],
                 _buildDownloadButton(
                   context,
                   downloadProvider,
@@ -131,7 +153,8 @@ class EpisodeTile extends StatelessWidget {
           if (playerProvider.currentEpisode?.id == episode.id) {
             playerProvider.togglePlayPause();
           } else {
-            playerProvider.playEpisode(episode);
+            onPlay?.call();
+            if (onPlay == null) playerProvider.playEpisode(episode);
           }
         },
       ),
@@ -156,7 +179,8 @@ class EpisodeTile extends StatelessWidget {
       icon: Icon(
         isDownloaded ? Icons.download_done_rounded : Icons.download_rounded,
         color: isDownloaded
-            ? (Theme.of(context).extension<AppThemeExtension>()?.success ?? Colors.green)
+            ? (Theme.of(context).extension<AppThemeExtension>()?.success ??
+                  Colors.green)
             : Theme.of(context).iconTheme.color,
       ),
       onPressed: () {

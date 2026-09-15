@@ -15,6 +15,11 @@ class PlayerProvider with ChangeNotifier {
   Duration _duration = Duration.zero;
   double _speed = 1.0;
   String? _error;
+  List<Episode>? _queue;
+  int _queueIndex = -1;
+
+  Future<void> Function(String episodeId, int position)?
+  onPlaybackPositionChanged;
 
   // Getters
   Episode? get currentEpisode => _currentEpisode;
@@ -25,6 +30,7 @@ class PlayerProvider with ChangeNotifier {
   String? get error => _error;
   bool get hasEpisode => _currentEpisode != null;
   bool get hasError => _error != null;
+  bool get hasPlaybackQueue => _queue != null;
 
   double get progress {
     if (_duration.inMilliseconds > 0) {
@@ -87,6 +93,33 @@ class PlayerProvider with ChangeNotifier {
 
   // Play episode
   Future<void> playEpisode(Episode episode) async {
+    _queue = null;
+    _queueIndex = -1;
+    await _playEpisode(episode);
+  }
+
+  Future<void> playQueue(List<Episode> episodes, {int startIndex = 0}) async {
+    if (episodes.isEmpty || startIndex < 0 || startIndex >= episodes.length) {
+      return;
+    }
+    _queue = List.of(episodes);
+    _queueIndex = startIndex;
+    await _playEpisode(_queue![_queueIndex]);
+  }
+
+  Future<bool> playNextQueuedEpisode() async {
+    final queue = _queue;
+    if (queue == null || _queueIndex + 1 >= queue.length) {
+      _queue = null;
+      _queueIndex = -1;
+      return false;
+    }
+    _queueIndex++;
+    await _playEpisode(queue[_queueIndex]);
+    return true;
+  }
+
+  Future<void> _playEpisode(Episode episode) async {
     try {
       _error = null;
       _currentEpisode = episode;
@@ -157,6 +190,10 @@ class PlayerProvider with ChangeNotifier {
       } catch (e) {
         logger.e('Error saving playback position', error: e);
       }
+      await onPlaybackPositionChanged?.call(
+        _currentEpisode!.id,
+        _position.inSeconds,
+      );
     }
   }
 

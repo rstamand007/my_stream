@@ -4,9 +4,11 @@ import 'package:provider/provider.dart';
 import 'library_screen.dart';
 import 'search_screen.dart';
 import 'downloads_screen.dart';
+import 'playlists_screen.dart';
 import 'settings_screen.dart';
 import '../widgets/mini_player.dart';
 import '../providers/podcast_provider.dart';
+import '../providers/playlist_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,12 +24,12 @@ class _HomeScreenState extends State<HomeScreen> {
     LibraryScreen(),
     SearchScreen(),
     DownloadsScreen(),
+    PlaylistsScreen(),
     SettingsScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       body: _screens[_currentIndex],
       bottomNavigationBar: Column(
@@ -50,7 +52,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(40),
                   boxShadow: [
                     BoxShadow(
-                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.4),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -73,18 +77,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         icon: Icons.library_music_rounded,
                         index: 0,
                       ),
-                      _buildNavItem(
-                        icon: Icons.search_rounded,
-                        index: 1,
-                      ),
-                      _buildNavItem(
-                        icon: Icons.download_rounded,
-                        index: 2,
-                      ),
-                      _buildNavItem(
-                        icon: Icons.settings_rounded,
-                        index: 3,
-                      ),
+                      _buildNavItem(icon: Icons.search_rounded, index: 1),
+                      _buildNavItem(icon: Icons.download_rounded, index: 2),
+                      _buildNavItem(icon: Icons.queue_music_rounded, index: 3),
+                      _buildNavItem(icon: Icons.settings_rounded, index: 4),
                     ],
                   ),
                 ),
@@ -96,10 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildNavItem({
-    required IconData icon,
-    required int index,
-  }) {
+  Widget _buildNavItem({required IconData icon, required int index}) {
     final isSelected = _currentIndex == index;
 
     return GestureDetector(
@@ -107,6 +100,9 @@ class _HomeScreenState extends State<HomeScreen> {
         if (index == 0) {
           // Refresh library when Library tab is selected
           context.read<PodcastProvider>().loadSubscribedPodcasts();
+        }
+        if (index == 3) {
+          context.read<PlaylistProvider>().load();
         }
         setState(() {
           _currentIndex = index;
