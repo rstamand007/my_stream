@@ -123,6 +123,10 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> {
                         episodes,
                         startIndex: index,
                       ),
+                      playbackPosition: provider.playbackPositionFor(
+                        playlist,
+                        episode,
+                      ),                      
                       dragHandle: kIsWeb
                           ? ReorderableDragStartListener(
                               index: index,
@@ -132,10 +136,6 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> {
                               index: index,
                               child: const Icon(Icons.drag_handle_rounded),
                             ),
-                      playbackPosition: provider.playbackPositionFor(
-                        playlist,
-                        episode,
-                      ),
                     );
                   },
                 ),
