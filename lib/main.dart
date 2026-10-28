@@ -96,9 +96,15 @@ class MyStreamApp extends StatelessWidget {
           final playerProvider = context.read<PlayerProvider>();
           final downloadProvider = context.read<DownloadProvider>();
           final playlistProvider = context.read<PlaylistProvider>();
+          final podcastProvider = context.read<PodcastProvider>();
 
           playerProvider.onPlaybackPositionChanged =
               playlistProvider.updatePlaybackPosition;
+
+          playerProvider.onEpisodePlayedStatusChanged = (episodeId, isPlayed) async {
+            podcastProvider.updateInMemoryPlayedStatus(episodeId, isPlayed);
+            downloadProvider.updateInMemoryPlayedStatus(episodeId, isPlayed);
+          };
 
           playerProvider.onEpisodeEnded = () async {
             final hadPlaybackQueue = playerProvider.hasPlaybackQueue;

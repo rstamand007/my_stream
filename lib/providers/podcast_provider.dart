@@ -128,7 +128,7 @@ class PodcastProvider with ChangeNotifier {
 
       if (episodes.isNotEmpty) {
         await _db.insertEpisodes(episodes);
-        _podcastEpisodes[podcastId] = episodes;
+        _podcastEpisodes[podcastId] = await _db.getEpisodesByPodcast(podcastId);
       }
 
       _isLoading = false;
@@ -174,5 +174,62 @@ class PodcastProvider with ChangeNotifier {
   Future<bool> isSubscribed(String podcastId) async {
     final podcast = await _db.getPodcast(podcastId);
     return podcast?.isSubscribed ?? false;
+  }
+
+  // Mark episode as played or unplayed
+  Future<void> setEpisodePlayedStatus(String episodeId, bool isPlayed) async {
+    try {
+      await _db.updateEpisodePlayedStatus(episodeId, isPlayed);
+      updateInMemoryPlayedStatus(episodeId, isPlayed);
+    } catch (e) {
+      _error = 'Failed to update episode played status: $e';
+      notifyListeners();
+    }
+  }
+
+  // Update in-memory played status
+  void updateInMemoryPlayedStatus(String episodeId, bool isPlayed) {
+    bool updated = false;
+    for (final podcastId in _podcastEpisodes.keys) {
+      final episodes = _podcastEpisodes[podcastId];
+      if (episodes != null) {
+        final index = episodes.indexWhere((e) => e.id == episodeId);
+        if (index != -1) {
+          episodes[index] = episodes[index].copyWith(
+            isPlayed: isPlayed,
+            playbackPosition: isPlayed ? 0 : episodes[index].playbackPosition,
+          );
+          updated = true;
+        }
+      }
+    }
+    if (updated) {
+      notifyListeners();
+    }
+  }
+
+  // Mark all episodes of a podcast as played or unplayed
+  Future<void> setAllEpisodesPlayedStatus(
+    String podcastId,
+    bool isPlayed,
+  ) async {
+    try {
+      await _db.updateAllEpisodesPlayedStatus(podcastId, isPlayed);
+      final episodes = _podcastEpisodes[podcastId];
+      if (episodes != null) {
+        _podcastEpisodes[podcastId] = episodes
+            .map(
+              (e) => e.copyWith(
+                isPlayed: isPlayed,
+                playbackPosition: isPlayed ? 0 : e.playbackPosition,
+              ),
+            )
+            .toList();
+      }
+      notifyListeners();
+    } catch (e) {
+      _error = 'Failed to update all episodes: $e';
+      notifyListeners();
+    }
   }
 }

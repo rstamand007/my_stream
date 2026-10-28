@@ -26,6 +26,8 @@ class Episode {
   final int? playbackPosition; // in seconds
   @HiveField(10)
   final String? artworkUrl;
+  @HiveField(11, defaultValue: false)
+  final bool isPlayed;
 
   Episode({
     required this.id,
@@ -39,6 +41,7 @@ class Episode {
     this.localFilePath,
     this.playbackPosition,
     this.artworkUrl,
+    this.isPlayed = false,
   });
 
   // Create from RSS feed item
@@ -72,6 +75,7 @@ class Episode {
       localFilePath: map['localFilePath'],
       playbackPosition: map['playbackPosition'],
       artworkUrl: map['artworkUrl'],
+      isPlayed: map['isPlayed'] == 1 || map['isPlayed'] == true,
     );
   }
 
@@ -89,6 +93,7 @@ class Episode {
       'localFilePath': localFilePath,
       'playbackPosition': playbackPosition,
       'artworkUrl': artworkUrl,
+      'isPlayed': isPlayed ? 1 : 0,
     };
   }
 
@@ -105,6 +110,7 @@ class Episode {
     String? localFilePath,
     int? playbackPosition,
     String? artworkUrl,
+    bool? isPlayed,
   }) {
     return Episode(
       id: id ?? this.id,
@@ -118,6 +124,7 @@ class Episode {
       localFilePath: localFilePath ?? this.localFilePath,
       playbackPosition: playbackPosition ?? this.playbackPosition,
       artworkUrl: artworkUrl ?? this.artworkUrl,
+      isPlayed: isPlayed ?? this.isPlayed,
     );
   }
 

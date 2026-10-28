@@ -19,6 +19,8 @@ class PodcastDetailScreen extends StatefulWidget {
 }
 
 class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
+  bool _filterUnreadOnly = false;
+
   @override
   void initState() {
     super.initState();
@@ -235,11 +237,116 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
                       const SizedBox(height: 24),
                     ],
   
-                    Text(
-                      l10n.episodes,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.headlineMedium?.copyWith(fontSize: 18),
+                    Consumer<PodcastProvider>(
+                      builder: (context, provider, child) {
+                        final allEpisodes =
+                            provider.getEpisodes(widget.podcast.id);
+                        final unreadCount =
+                            allEpisodes.where((e) => !e.isPlayed).length;
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  l10n.episodes,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineMedium
+                                      ?.copyWith(fontSize: 18),
+                                ),
+                                if (allEpisodes.isNotEmpty)
+                                  PopupMenuButton<String>(
+                                    icon: const Icon(Icons.more_horiz_rounded),
+                                    tooltip: l10n.episodes,
+                                    onSelected: (value) async {
+                                      if (value == 'mark_all_played') {
+                                        await provider
+                                            .setAllEpisodesPlayedStatus(
+                                          widget.podcast.id,
+                                          true,
+                                        );
+                                      } else if (value == 'mark_all_unplayed') {
+                                        await provider
+                                            .setAllEpisodesPlayedStatus(
+                                          widget.podcast.id,
+                                          false,
+                                        );
+                                      }
+                                    },
+                                    itemBuilder: (context) => [
+                                      PopupMenuItem(
+                                        value: 'mark_all_played',
+                                        child: Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.done_all_rounded,
+                                              size: 20,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(l10n.markAllAsPlayed),
+                                          ],
+                                        ),
+                                      ),
+                                      PopupMenuItem(
+                                        value: 'mark_all_unplayed',
+                                        child: Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.remove_done_rounded,
+                                              size: 20,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(l10n.markAllAsUnplayed),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                            if (allEpisodes.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  ChoiceChip(
+                                    key: const ValueKey('filter_all_chip'),
+                                    label: Text(
+                                      '${l10n.all} (${allEpisodes.length})',
+                                    ),
+                                    selected: !_filterUnreadOnly,
+                                    onSelected: (selected) {
+                                      if (selected) {
+                                        setState(
+                                          () => _filterUnreadOnly = false,
+                                        );
+                                      }
+                                    },
+                                  ),
+                                  const SizedBox(width: 8),
+                                  ChoiceChip(
+                                    key: const ValueKey('filter_unread_chip'),
+                                    avatar: _filterUnreadOnly
+                                        ? const Icon(Icons.check, size: 16)
+                                        : null,
+                                    label: Text(
+                                      '${l10n.unread} ($unreadCount)',
+                                    ),
+                                    selected: _filterUnreadOnly,
+                                    onSelected: (selected) {
+                                      setState(
+                                        () => _filterUnreadOnly = selected,
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -249,15 +356,15 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
             // Episodes list
             Consumer<PodcastProvider>(
               builder: (context, provider, child) {
-                final episodes = provider.getEpisodes(widget.podcast.id);
-  
-                if (provider.isLoading && episodes.isEmpty) {
+                final allEpisodes = provider.getEpisodes(widget.podcast.id);
+
+                if (provider.isLoading && allEpisodes.isEmpty) {
                   return const SliverFillRemaining(
                     child: Center(child: CircularProgressIndicator()),
                   );
                 }
-  
-                if (episodes.isEmpty) {
+
+                if (allEpisodes.isEmpty) {
                   return SliverFillRemaining(
                     child: Center(
                       child: Text(
@@ -267,10 +374,60 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen> {
                     ),
                   );
                 }
-  
+
+                final episodes = _filterUnreadOnly
+                    ? allEpisodes.where((e) => !e.isPlayed).toList()
+                    : allEpisodes;
+
+                if (episodes.isEmpty && _filterUnreadOnly) {
+                  return SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.done_all_rounded,
+                              size: 64,
+                              color: Theme.of(context)
+                                      .extension<AppThemeExtension>()
+                                      ?.success ??
+                                  Colors.green,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              l10n.allEpisodesPlayed,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineMedium
+                                  ?.copyWith(fontSize: 18),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            TextButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  _filterUnreadOnly = false;
+                                });
+                              },
+                              icon: const Icon(Icons.visibility_rounded),
+                              label: Text(l10n.showAllEpisodes),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
                 return SliverList(
                   delegate: SliverChildBuilderDelegate((context, index) {
-                    return EpisodeTile(episode: episodes[index]);
+                    return EpisodeTile(
+                      key: ValueKey(episodes[index].id),
+                      episode: episodes[index],
+                    );
                   }, childCount: episodes.length),
                 );
               },

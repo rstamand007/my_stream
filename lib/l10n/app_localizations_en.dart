@@ -160,4 +160,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get localFile => 'Local File';
+
+  @override
+  String get markAsPlayed => 'Mark as played';
+
+  @override
+  String get markAsUnplayed => 'Mark as unplayed';
+
+  @override
+  String get played => 'Played';
+
+  @override
+  String get unread => 'Unread';
+
+  @override
+  String get unreadOnly => 'Unread only';
+
+  @override
+  String get all => 'All';
+
+  @override
+  String get allEpisodesPlayed => 'All episodes played';
+
+  @override
+  String get showAllEpisodes => 'Show all episodes';
+
+  @override
+  String get markAllAsPlayed => 'Mark all as played';
+
+  @override
+  String get markAllAsUnplayed => 'Mark all as unplayed';
 }

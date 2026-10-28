@@ -162,4 +162,34 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get localFile => 'Fichier local';
+
+  @override
+  String get markAsPlayed => 'Marquer comme lu';
+
+  @override
+  String get markAsUnplayed => 'Marquer comme non lu';
+
+  @override
+  String get played => 'Lu';
+
+  @override
+  String get unread => 'Non lu';
+
+  @override
+  String get unreadOnly => 'Non lus uniquement';
+
+  @override
+  String get all => 'Tous';
+
+  @override
+  String get allEpisodesPlayed => 'Tous les épisodes sont lus';
+
+  @override
+  String get showAllEpisodes => 'Afficher tous les épisodes';
+
+  @override
+  String get markAllAsPlayed => 'Tout marquer comme lu';
+
+  @override
+  String get markAllAsUnplayed => 'Tout marquer comme non lu';
 }
