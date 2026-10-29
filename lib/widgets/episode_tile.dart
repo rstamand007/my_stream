@@ -124,7 +124,7 @@ class EpisodeTile extends StatelessWidget {
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (dragHandle != null) dragHandle!,
+                ?dragHandle,
                 if (playbackPosition != null && playbackPosition! > 0) ...[
                   Icon(
                     Icons.history_rounded,

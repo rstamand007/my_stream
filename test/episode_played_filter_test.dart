@@ -14,7 +14,7 @@ import 'package:my_stream/l10n/app_localizations.dart';
 class MockPodcastProvider extends ChangeNotifier implements PodcastProvider {
   final List<Episode> _episodes = [];
   final List<Podcast> _subscribedPodcasts = [];
-  bool _isLoading = false;
+  final bool _isLoading = false;
 
   void setEpisodes(List<Episode> episodes) {
     _episodes.clear();

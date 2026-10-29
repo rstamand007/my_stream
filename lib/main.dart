@@ -108,7 +108,6 @@ class MyStreamApp extends StatelessWidget {
           };
 
           podcastProvider.onEpisodePlayedStatusChanged = (episodeId, isPlayed) async {
-            playerProvider.handleEpisodePlayedStatusChanged(episodeId, isPlayed);
             downloadProvider.updateInMemoryPlayedStatus(episodeId, isPlayed);
             await playlistProvider.updateEpisodePlayedStatus(episodeId, isPlayed);
           };
