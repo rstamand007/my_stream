@@ -7,10 +7,13 @@ class PlaylistProvider with ChangeNotifier {
   static const generatedPlaylistId = 'newest-subscribed-episodes';
   static const generatedPlaylistName = 'Newest subscribed episodes';
 
-  final DatabaseService _db = DatabaseService.instance;
+  final DatabaseService _db;
   List<Playlist> _playlists = [];
   List<Episode> _allEpisodes = [];
   bool _isLoading = false;
+
+  PlaylistProvider({DatabaseService? databaseService})
+      : _db = databaseService ?? DatabaseService.instance;
 
   List<Playlist> get playlists => List.unmodifiable(_playlists);
   List<Episode> get allEpisodes => List.unmodifiable(_allEpisodes);
@@ -31,6 +34,16 @@ class PlaylistProvider with ChangeNotifier {
   }
 
   Future<void> refreshGeneratedPlaylist() async {
+    _allEpisodes = await _db.getAllEpisodes();
+    await _refreshGeneratedPlaylist();
+    notifyListeners();
+  }
+
+  Future<void> updateEpisodePlayedStatus(
+    String episodeId,
+    bool isPlayed,
+  ) async {
+    _allEpisodes = await _db.getAllEpisodes();
     await _refreshGeneratedPlaylist();
     notifyListeners();
   }
@@ -109,10 +122,14 @@ class PlaylistProvider with ChangeNotifier {
 
   List<Episode> episodesFor(Playlist playlist) {
     final byId = {for (final episode in _allEpisodes) episode.id: episode};
-    return playlist.episodeIds
+    final episodes = playlist.episodeIds
         .map((id) => byId[id])
         .whereType<Episode>()
         .toList();
+    if (playlist.id == generatedPlaylistId) {
+      return episodes.where((e) => !e.isPlayed).toList();
+    }
+    return episodes;
   }
 
   Future<void> _refreshGeneratedPlaylist() async {
@@ -123,7 +140,10 @@ class PlaylistProvider with ChangeNotifier {
     final newestEpisodeIds = <String>[];
     for (final podcast in subscribedPodcasts) {
       final episodes = await _db.getEpisodesByPodcast(podcast.id);
-      if (episodes.isNotEmpty) newestEpisodeIds.add(episodes.first.id);
+      final unplayedEpisodes = episodes.where((e) => !e.isPlayed).toList();
+      if (unplayedEpisodes.isNotEmpty) {
+        newestEpisodeIds.add(unplayedEpisodes.first.id);
+      }
     }
 
     final orderedEpisodeIds = [

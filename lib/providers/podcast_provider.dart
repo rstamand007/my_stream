@@ -15,6 +15,11 @@ class PodcastProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
+  Future<void> Function(String episodeId, bool isPlayed)?
+  onEpisodePlayedStatusChanged;
+
+  Future<void> Function()? onPodcastsChanged;
+
   // Getters
   List<Podcast> get subscribedPodcasts => _subscribedPodcasts;
   List<Podcast> get searchResults => _searchResults;
@@ -100,6 +105,7 @@ class PodcastProvider with ChangeNotifier {
       await fetchEpisodes(podcast.id, podcast.feedUrl);
 
       await loadSubscribedPodcasts();
+      await onPodcastsChanged?.call();
     } catch (e) {
       _error = 'Failed to subscribe: $e';
       notifyListeners();
@@ -112,6 +118,7 @@ class PodcastProvider with ChangeNotifier {
       await _db.deletePodcast(podcastId);
       _podcastEpisodes.remove(podcastId);
       await loadSubscribedPodcasts();
+      await onPodcastsChanged?.call();
     } catch (e) {
       _error = 'Failed to unsubscribe: $e';
       notifyListeners();
@@ -162,6 +169,7 @@ class PodcastProvider with ChangeNotifier {
       final updatedPodcast = podcast.copyWith(lastUpdatedAt: DateTime.now());
       await _db.updatePodcast(updatedPodcast);
       await loadSubscribedPodcasts();
+      await onPodcastsChanged?.call();
     }
   }
 
@@ -181,6 +189,7 @@ class PodcastProvider with ChangeNotifier {
     try {
       await _db.updateEpisodePlayedStatus(episodeId, isPlayed);
       updateInMemoryPlayedStatus(episodeId, isPlayed);
+      await onEpisodePlayedStatusChanged?.call(episodeId, isPlayed);
     } catch (e) {
       _error = 'Failed to update episode played status: $e';
       notifyListeners();
@@ -227,6 +236,7 @@ class PodcastProvider with ChangeNotifier {
             .toList();
       }
       notifyListeners();
+      await onPodcastsChanged?.call();
     } catch (e) {
       _error = 'Failed to update all episodes: $e';
       notifyListeners();
