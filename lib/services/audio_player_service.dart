@@ -85,7 +85,13 @@ class AudioPlayerService {
 
       // Set audio source
       if (finalUrl.startsWith('http')) {
-        await _player.setUrl(finalUrl);
+        await _player.setUrl(
+          finalUrl,
+          headers: const {
+            'User-Agent':
+                'MyStreamPodcastPlayer/1.0.0 (https://github.com/rstamand007/my_stream)',
+          },
+        );
       } else {
         await _player.setFilePath(finalUrl);
       }
@@ -112,7 +118,10 @@ class AudioPlayerService {
 
   // Play/Pause toggle
   Future<void> togglePlayPause() async {
-    if (_player.playing) {
+    if (_player.processingState == ProcessingState.completed) {
+      await _player.seek(Duration.zero);
+      await play();
+    } else if (_player.playing) {
       await pause();
     } else {
       await play();

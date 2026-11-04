@@ -41,8 +41,8 @@ void main() async {
       config: const AudioServiceConfig(
         androidNotificationChannelId: 'com.mystream.my_stream.audio',
         androidNotificationChannelName: 'MyStream Playback',
-        androidNotificationOngoing: true,
-        androidStopForegroundOnPause: true,
+        androidNotificationOngoing: false,
+        androidStopForegroundOnPause: false,
       ),
     );
 
