@@ -102,7 +102,7 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> {
                 ReorderableListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  buildDefaultDragHandles: false,
+                  buildDefaultDragHandles: true,
                   itemCount: episodes.length,
                   onReorder: (oldIndex, newIndex) {
                     if (oldIndex < newIndex) newIndex -= 1;

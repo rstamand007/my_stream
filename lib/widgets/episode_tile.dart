@@ -60,7 +60,8 @@ class EpisodeTile extends StatelessWidget {
               horizontal: 16,
               vertical: 8,
             ),
-            leading: _buildPlayButton(context, playerProvider, isPlaying),
+//            leading: _buildPlayButton(context, playerProvider, isPlaying),
+//            leading: dragHandle,
             title: Text(
               episode.title,
               style: TextStyle(
@@ -124,7 +125,8 @@ class EpisodeTile extends StatelessWidget {
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                ?dragHandle,
+//                ?dragHandle,
+                _buildPlayButton(context, playerProvider, isPlaying),
                 if (playbackPosition != null && playbackPosition! > 0) ...[
                   Icon(
                     Icons.history_rounded,
