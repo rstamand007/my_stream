@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:audio_session/audio_session.dart';
@@ -12,6 +13,7 @@ class MyStreamAudioHandler extends BaseAudioHandler {
   );
 
   bool _playInterrupted = false;
+  Timer? _duckTimer;
 
   MyStreamAudioHandler() {
     logger.d('MyStreamAudioHandler constructor called');
@@ -21,38 +23,69 @@ class MyStreamAudioHandler extends BaseAudioHandler {
   Future<void> _init() async {
     try {
       logger.d('MyStreamAudioHandler._init() starting');
-      // Configure audio session for speech/podcast playback
+      // Configure audio session for speech/podcast playback with ducking
       final session = await AudioSession.instance;
-      await session.configure(const AudioSessionConfiguration.speech());
-      logger.d('AudioSession configured for speech');
+      await session.configure(
+        const AudioSessionConfiguration(
+          avAudioSessionCategory: AVAudioSessionCategory.playback,
+          avAudioSessionMode: AVAudioSessionMode.spokenAudio,
+          androidAudioAttributes: AndroidAudioAttributes(
+            contentType: AndroidAudioContentType.speech,
+            flags: AndroidAudioFlags.none,
+            usage: AndroidAudioUsage.media,
+          ),
+          androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+          androidWillPauseWhenDucked: false,
+        ),
+      );
+      logger.d('AudioSession configured for speech playback with ducking');
 
-      // Listen to audio focus and system interruptions manually
+      // Listen to audio focus and system interruptions
       session.interruptionEventStream.listen((event) async {
-        logger.d('Audio session interruption event: begin=${event.begin}, type=${event.type}');
+        logger.d(
+          'Audio session interruption event: begin=${event.begin}, type=${event.type}',
+        );
         if (event.begin) {
-          // Interruption began (e.g. phone call, SMS notification, navigation)
           switch (event.type) {
             case AudioInterruptionType.duck:
+              _duckTimer?.cancel();
+              await player.setVolume(0.2);
+              _duckTimer = Timer(const Duration(seconds: 4), () {
+                if (player.volume < 1.0) {
+                  player.setVolume(1.0);
+                }
+              });
+              break;
             case AudioInterruptionType.pause:
-            case AudioInterruptionType.unknown:
               if (player.playing) {
                 logger.d('Player is playing, pausing due to interruption');
                 _playInterrupted = true;
                 await player.pause();
               }
               break;
+            case AudioInterruptionType.unknown:
+              if (player.playing) {
+                logger.d('Player is playing, pausing due to focus loss');
+                _playInterrupted = false;
+                await player.pause();
+              }
+              break;
           }
         } else {
-          // Interruption ended (transient focus regained)
           switch (event.type) {
             case AudioInterruptionType.duck:
+              _duckTimer?.cancel();
+              await player.setVolume(1.0);
+              break;
             case AudioInterruptionType.pause:
-            case AudioInterruptionType.unknown:
               if (_playInterrupted) {
                 logger.d('Resuming playback after interruption ended');
                 _playInterrupted = false;
                 await play();
               }
+              break;
+            case AudioInterruptionType.unknown:
+              _playInterrupted = false;
               break;
           }
         }
@@ -64,9 +97,16 @@ class MyStreamAudioHandler extends BaseAudioHandler {
         await pause();
       });
 
-      // Broadcast playback state changes to the OS
-      player.playbackEventStream.map(_transformEvent).pipe(playbackState);
-      logger.d('PlaybackState pipe established');
+      // Broadcast playback state changes to the OS without closing the stream on errors
+      player.playbackEventStream.listen(
+        (event) {
+          playbackState.add(_transformEvent(event));
+        },
+        onError: (Object e, StackTrace st) {
+          logger.e('Error on playbackEventStream', error: e, stackTrace: st);
+        },
+      );
+      logger.d('PlaybackState listener established');
 
       // Handle completion
       player.processingStateStream.listen((state) {
@@ -81,8 +121,14 @@ class MyStreamAudioHandler extends BaseAudioHandler {
   }
 
   @override
-  Future<void> play() {
+  Future<void> play() async {
     _playInterrupted = false;
+    try {
+      final session = await AudioSession.instance;
+      await session.setActive(true);
+    } catch (e) {
+      logger.w('Failed to activate AudioSession: $e');
+    }
     return player.play();
   }
 
@@ -98,7 +144,14 @@ class MyStreamAudioHandler extends BaseAudioHandler {
   @override
   Future<void> stop() async {
     _playInterrupted = false;
+    _duckTimer?.cancel();
     await player.stop();
+    try {
+      final session = await AudioSession.instance;
+      await session.setActive(false);
+    } catch (e) {
+      logger.w('Failed to deactivate AudioSession: $e');
+    }
     return super.stop();
   }
 
@@ -108,6 +161,7 @@ class MyStreamAudioHandler extends BaseAudioHandler {
   @override
   Future<dynamic> customAction(String name, [Map<String, dynamic>? extras]) async {
     if (name == 'dispose') {
+      _duckTimer?.cancel();
       await player.dispose();
     }
   }
@@ -133,7 +187,7 @@ class MyStreamAudioHandler extends BaseAudioHandler {
         ProcessingState.buffering: AudioProcessingState.buffering,
         ProcessingState.ready: AudioProcessingState.ready,
         ProcessingState.completed: AudioProcessingState.completed,
-      }[player.processingState]!,
+      }[player.processingState] ?? AudioProcessingState.idle,
       playing: player.playing,
       updatePosition: player.position,
       bufferedPosition: player.bufferedPosition,

@@ -51,5 +51,15 @@
   "lastUpdated": "Last updated: {date}",
   "addFiles": "Add Files",
   "addFolder": "Add Folder",
-  "localFile": "Local File"
+  "localFile": "Local File",
+  "markAsPlayed": "Mark as played",
+  "markAsUnplayed": "Mark as unplayed",
+  "played": "Played",
+  "unread": "Unread",
+  "unreadOnly": "Unread only",
+  "all": "All",
+  "allEpisodesPlayed": "All episodes played",
+  "showAllEpisodes": "Show all episodes",
+  "markAllAsPlayed": "Mark all as played",
+  "markAllAsUnplayed": "Mark all as unplayed"
 }

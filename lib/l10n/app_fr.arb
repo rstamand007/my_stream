@@ -48,5 +48,15 @@
   "lastUpdated": "Dernière mise à jour : {date}",
   "addFiles": "Ajouter des fichiers",
   "addFolder": "Ajouter un dossier",
-  "localFile": "Fichier local"
+  "localFile": "Fichier local",
+  "markAsPlayed": "Marquer comme lu",
+  "markAsUnplayed": "Marquer comme non lu",
+  "played": "Lu",
+  "unread": "Non lu",
+  "unreadOnly": "Non lus uniquement",
+  "all": "Tous",
+  "allEpisodesPlayed": "Tous les épisodes sont lus",
+  "showAllEpisodes": "Afficher tous les épisodes",
+  "markAllAsPlayed": "Tout marquer comme lu",
+  "markAllAsUnplayed": "Tout marquer comme non lu"
 }

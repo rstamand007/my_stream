@@ -73,14 +73,37 @@ class DatabaseService {
   // Episode CRUD operations
   Future<void> insertEpisode(Episode episode) async {
     final box = await episodeBox;
-    await box.put(episode.id, episode);
+    final existing = box.get(episode.id);
+    if (existing != null) {
+      final merged = episode.copyWith(
+        isDownloaded: existing.isDownloaded || episode.isDownloaded,
+        localFilePath: episode.localFilePath ?? existing.localFilePath,
+        playbackPosition: episode.playbackPosition ?? existing.playbackPosition,
+        isPlayed: existing.isPlayed || episode.isPlayed,
+      );
+      await box.put(episode.id, merged);
+    } else {
+      await box.put(episode.id, episode);
+    }
   }
 
   Future<void> insertEpisodes(List<Episode> episodes) async {
     final box = await episodeBox;
-    final Map<String, Episode> episodeMap = {
-      for (var episode in episodes) episode.id: episode,
-    };
+    final Map<String, Episode> episodeMap = {};
+    for (var episode in episodes) {
+      final existing = box.get(episode.id);
+      if (existing != null) {
+        episodeMap[episode.id] = episode.copyWith(
+          isDownloaded: existing.isDownloaded || episode.isDownloaded,
+          localFilePath: episode.localFilePath ?? existing.localFilePath,
+          playbackPosition:
+              episode.playbackPosition ?? existing.playbackPosition,
+          isPlayed: existing.isPlayed || episode.isPlayed,
+        );
+      } else {
+        episodeMap[episode.id] = episode;
+      }
+    }
     await box.putAll(episodeMap);
   }
 
@@ -137,13 +160,49 @@ class DatabaseService {
     await box.delete(id);
   }
 
-  // Playback history operations
+  // Playback history and status operations
   Future<void> savePlaybackPosition(String episodeId, int position) async {
     final box = await episodeBox;
     final episode = box.get(episodeId);
     if (episode != null) {
-      final updatedEpisode = episode.copyWith(playbackPosition: position);
+      final bool isEnded = episode.duration > 0 && position >= episode.duration;
+      final updatedEpisode = episode.copyWith(
+        playbackPosition: isEnded ? 0 : position,
+        isPlayed: isEnded ? true : episode.isPlayed,
+      );
       await box.put(episodeId, updatedEpisode);
+    }
+  }
+
+  Future<void> updateEpisodePlayedStatus(
+    String episodeId,
+    bool isPlayed,
+  ) async {
+    final box = await episodeBox;
+    final episode = box.get(episodeId);
+    if (episode != null) {
+      final updatedEpisode = episode.copyWith(
+        isPlayed: isPlayed,
+        playbackPosition: isPlayed ? 0 : episode.playbackPosition,
+      );
+      await box.put(episodeId, updatedEpisode);
+    }
+  }
+
+  Future<void> updateAllEpisodesPlayedStatus(
+    String podcastId,
+    bool isPlayed,
+  ) async {
+    final box = await episodeBox;
+    final Map<String, Episode> toUpdate = {};
+    for (var episode in box.values.where((e) => e.podcastId == podcastId)) {
+      toUpdate[episode.id] = episode.copyWith(
+        isPlayed: isPlayed,
+        playbackPosition: isPlayed ? 0 : episode.playbackPosition,
+      );
+    }
+    if (toUpdate.isNotEmpty) {
+      await box.putAll(toUpdate);
     }
   }
 

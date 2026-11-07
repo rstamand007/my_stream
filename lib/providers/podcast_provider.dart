@@ -15,6 +15,11 @@ class PodcastProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
+  Future<void> Function(String episodeId, bool isPlayed)?
+  onEpisodePlayedStatusChanged;
+
+  Future<void> Function()? onPodcastsChanged;
+
   // Getters
   List<Podcast> get subscribedPodcasts => _subscribedPodcasts;
   List<Podcast> get searchResults => _searchResults;
@@ -100,6 +105,7 @@ class PodcastProvider with ChangeNotifier {
       await fetchEpisodes(podcast.id, podcast.feedUrl);
 
       await loadSubscribedPodcasts();
+      await onPodcastsChanged?.call();
     } catch (e) {
       _error = 'Failed to subscribe: $e';
       notifyListeners();
@@ -112,6 +118,7 @@ class PodcastProvider with ChangeNotifier {
       await _db.deletePodcast(podcastId);
       _podcastEpisodes.remove(podcastId);
       await loadSubscribedPodcasts();
+      await onPodcastsChanged?.call();
     } catch (e) {
       _error = 'Failed to unsubscribe: $e';
       notifyListeners();
@@ -128,7 +135,7 @@ class PodcastProvider with ChangeNotifier {
 
       if (episodes.isNotEmpty) {
         await _db.insertEpisodes(episodes);
-        _podcastEpisodes[podcastId] = episodes;
+        _podcastEpisodes[podcastId] = await _db.getEpisodesByPodcast(podcastId);
       }
 
       _isLoading = false;
@@ -162,6 +169,7 @@ class PodcastProvider with ChangeNotifier {
       final updatedPodcast = podcast.copyWith(lastUpdatedAt: DateTime.now());
       await _db.updatePodcast(updatedPodcast);
       await loadSubscribedPodcasts();
+      await onPodcastsChanged?.call();
     }
   }
 
@@ -174,5 +182,64 @@ class PodcastProvider with ChangeNotifier {
   Future<bool> isSubscribed(String podcastId) async {
     final podcast = await _db.getPodcast(podcastId);
     return podcast?.isSubscribed ?? false;
+  }
+
+  // Mark episode as played or unplayed
+  Future<void> setEpisodePlayedStatus(String episodeId, bool isPlayed) async {
+    try {
+      await _db.updateEpisodePlayedStatus(episodeId, isPlayed);
+      updateInMemoryPlayedStatus(episodeId, isPlayed);
+      await onEpisodePlayedStatusChanged?.call(episodeId, isPlayed);
+    } catch (e) {
+      _error = 'Failed to update episode played status: $e';
+      notifyListeners();
+    }
+  }
+
+  // Update in-memory played status
+  void updateInMemoryPlayedStatus(String episodeId, bool isPlayed) {
+    bool updated = false;
+    for (final podcastId in _podcastEpisodes.keys) {
+      final episodes = _podcastEpisodes[podcastId];
+      if (episodes != null) {
+        final index = episodes.indexWhere((e) => e.id == episodeId);
+        if (index != -1) {
+          episodes[index] = episodes[index].copyWith(
+            isPlayed: isPlayed,
+            playbackPosition: isPlayed ? 0 : episodes[index].playbackPosition,
+          );
+          updated = true;
+        }
+      }
+    }
+    if (updated) {
+      notifyListeners();
+    }
+  }
+
+  // Mark all episodes of a podcast as played or unplayed
+  Future<void> setAllEpisodesPlayedStatus(
+    String podcastId,
+    bool isPlayed,
+  ) async {
+    try {
+      await _db.updateAllEpisodesPlayedStatus(podcastId, isPlayed);
+      final episodes = _podcastEpisodes[podcastId];
+      if (episodes != null) {
+        _podcastEpisodes[podcastId] = episodes
+            .map(
+              (e) => e.copyWith(
+                isPlayed: isPlayed,
+                playbackPosition: isPlayed ? 0 : e.playbackPosition,
+              ),
+            )
+            .toList();
+      }
+      notifyListeners();
+      await onPodcastsChanged?.call();
+    } catch (e) {
+      _error = 'Failed to update all episodes: $e';
+      notifyListeners();
+    }
   }
 }

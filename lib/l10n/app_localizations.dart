@@ -397,6 +397,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Local File'**
   String get localFile;
+
+  /// No description provided for @markAsPlayed.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as played'**
+  String get markAsPlayed;
+
+  /// No description provided for @markAsUnplayed.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as unplayed'**
+  String get markAsUnplayed;
+
+  /// No description provided for @played.
+  ///
+  /// In en, this message translates to:
+  /// **'Played'**
+  String get played;
+
+  /// No description provided for @unread.
+  ///
+  /// In en, this message translates to:
+  /// **'Unread'**
+  String get unread;
+
+  /// No description provided for @unreadOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Unread only'**
+  String get unreadOnly;
+
+  /// No description provided for @all.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get all;
+
+  /// No description provided for @allEpisodesPlayed.
+  ///
+  /// In en, this message translates to:
+  /// **'All episodes played'**
+  String get allEpisodesPlayed;
+
+  /// No description provided for @showAllEpisodes.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all episodes'**
+  String get showAllEpisodes;
+
+  /// No description provided for @markAllAsPlayed.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all as played'**
+  String get markAllAsPlayed;
+
+  /// No description provided for @markAllAsUnplayed.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all as unplayed'**
+  String get markAllAsUnplayed;
 }
 
 class _AppLocalizationsDelegate

@@ -50,6 +50,17 @@ class DownloadProvider with ChangeNotifier, WidgetsBindingObserver {
     }
   }
 
+  void updateInMemoryPlayedStatus(String episodeId, bool isPlayed) {
+    final index = _downloadedEpisodes.indexWhere((e) => e.id == episodeId);
+    if (index != -1) {
+      _downloadedEpisodes[index] = _downloadedEpisodes[index].copyWith(
+        isPlayed: isPlayed,
+        playbackPosition: isPlayed ? 0 : _downloadedEpisodes[index].playbackPosition,
+      );
+      notifyListeners();
+    }
+  }
+
   bool isDownloading(String episodeId) {
     return _downloadService.isDownloading(episodeId);
   }

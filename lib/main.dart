@@ -41,8 +41,8 @@ void main() async {
       config: const AudioServiceConfig(
         androidNotificationChannelId: 'com.mystream.my_stream.audio',
         androidNotificationChannelName: 'MyStream Playback',
-        androidNotificationOngoing: true,
-        androidStopForegroundOnPause: true,
+        androidNotificationOngoing: false,
+        androidStopForegroundOnPause: false,
       ),
     );
 
@@ -96,9 +96,25 @@ class MyStreamApp extends StatelessWidget {
           final playerProvider = context.read<PlayerProvider>();
           final downloadProvider = context.read<DownloadProvider>();
           final playlistProvider = context.read<PlaylistProvider>();
+          final podcastProvider = context.read<PodcastProvider>();
 
           playerProvider.onPlaybackPositionChanged =
               playlistProvider.updatePlaybackPosition;
+
+          playerProvider.onEpisodePlayedStatusChanged = (episodeId, isPlayed) async {
+            podcastProvider.updateInMemoryPlayedStatus(episodeId, isPlayed);
+            downloadProvider.updateInMemoryPlayedStatus(episodeId, isPlayed);
+            await playlistProvider.updateEpisodePlayedStatus(episodeId, isPlayed);
+          };
+
+          podcastProvider.onEpisodePlayedStatusChanged = (episodeId, isPlayed) async {
+            downloadProvider.updateInMemoryPlayedStatus(episodeId, isPlayed);
+            await playlistProvider.updateEpisodePlayedStatus(episodeId, isPlayed);
+          };
+
+          podcastProvider.onPodcastsChanged = () async {
+            await playlistProvider.refreshGeneratedPlaylist();
+          };
 
           playerProvider.onEpisodeEnded = () async {
             final hadPlaybackQueue = playerProvider.hasPlaybackQueue;

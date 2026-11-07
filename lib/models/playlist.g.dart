@@ -21,9 +21,7 @@ class PlaylistAdapter extends TypeAdapter<Playlist> {
       name: fields[1] as String,
       episodeIds: (fields[2] as List).cast<String>(),
       isSystem: fields[3] as bool,
-      playbackPositions: fields[4] == null
-          ? const <String, int>{}
-          : (fields[4] as Map).cast<String, int>(),
+      playbackPositions: (fields[4] as Map).cast<String, int>(),
     );
   }
 

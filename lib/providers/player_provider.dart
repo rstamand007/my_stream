@@ -21,6 +21,9 @@ class PlayerProvider with ChangeNotifier {
   Future<void> Function(String episodeId, int position)?
   onPlaybackPositionChanged;
 
+  Future<void> Function(String episodeId, bool isPlayed)?
+  onEpisodePlayedStatusChanged;
+
   // Getters
   Episode? get currentEpisode => _currentEpisode;
   bool get isPlaying => _isPlaying;
@@ -55,6 +58,10 @@ class PlayerProvider with ChangeNotifier {
 
       // Handle completion: transition to stop state
       if (state.processingState == ProcessingState.completed) {
+        if (_currentEpisode != null) {
+          final completedEpisodeId = _currentEpisode!.id;
+          await markEpisodeAsPlayed(completedEpisodeId, true);
+        }
         if (onEpisodeEnded != null) {
           await onEpisodeEnded!();
         } else {
@@ -69,6 +76,15 @@ class PlayerProvider with ChangeNotifier {
     _audioService.positionStream.listen((position) {
       _position = position;
       notifyListeners();
+
+      // Check if position reached the end
+      if (_currentEpisode != null &&
+          _duration > Duration.zero &&
+          position >= _duration) {
+        if (!_currentEpisode!.isPlayed) {
+          markEpisodeAsPlayed(_currentEpisode!.id, true);
+        }
+      }
 
       // Save position every 5 seconds
       if (_currentEpisode != null && position.inSeconds % 5 == 0) {
@@ -182,11 +198,18 @@ class PlayerProvider with ChangeNotifier {
   // Save playback position to database
   Future<void> _savePlaybackPosition() async {
     if (_currentEpisode != null) {
+      final bool isEnded =
+          _duration > Duration.zero && _position >= _duration;
       try {
         await _db.savePlaybackPosition(
           _currentEpisode!.id,
           _position.inSeconds,
         );
+        if (isEnded && !_currentEpisode!.isPlayed) {
+          _currentEpisode = _currentEpisode!.copyWith(isPlayed: true);
+          notifyListeners();
+          await onEpisodePlayedStatusChanged?.call(_currentEpisode!.id, true);
+        }
       } catch (e) {
         logger.e('Error saving playback position', error: e);
       }
@@ -194,6 +217,23 @@ class PlayerProvider with ChangeNotifier {
         _currentEpisode!.id,
         _position.inSeconds,
       );
+    }
+  }
+
+  // Mark episode as played
+  Future<void> markEpisodeAsPlayed(String episodeId, bool isPlayed) async {
+    try {
+      await _db.updateEpisodePlayedStatus(episodeId, isPlayed);
+      if (_currentEpisode?.id == episodeId) {
+        _currentEpisode = _currentEpisode!.copyWith(
+          isPlayed: isPlayed,
+          playbackPosition: isPlayed ? 0 : _currentEpisode!.playbackPosition,
+        );
+        notifyListeners();
+      }
+      await onEpisodePlayedStatusChanged?.call(episodeId, isPlayed);
+    } catch (e) {
+      logger.e('Error marking episode as played', error: e);
     }
   }
 
