@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:http/http.dart' as http;
 import 'package:rxdart/rxdart.dart';
@@ -12,8 +13,10 @@ class _UserAgentClient extends http.BaseClient {
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) {
-    request.headers['User-Agent'] =
-        'MyStreamPodcastPlayer/1.0.0 (https://github.com/rstamand007/my_stream)';
+    if (!kIsWeb) {
+      request.headers['User-Agent'] =
+          'MyStreamPodcastPlayer/1.0.0 (https://github.com/rstamand007/my_stream)';
+    }
     return _inner.send(request);
   }
 
@@ -82,81 +85,83 @@ class MyStreamAudioHandler extends BaseAudioHandler {
         logger.d('SoLoud initialized');
       }
 
-      // Configure audio session for speech/podcast playback with ducking
-      final session = await AudioSession.instance;
-      await session.configure(
-        const AudioSessionConfiguration(
-          avAudioSessionCategory: AVAudioSessionCategory.playback,
-          avAudioSessionMode: AVAudioSessionMode.spokenAudio,
-          androidAudioAttributes: AndroidAudioAttributes(
-            contentType: AndroidAudioContentType.speech,
-            flags: AndroidAudioFlags.none,
-            usage: AndroidAudioUsage.media,
+      // Configure audio session for speech/podcast playback with ducking (mobile/desktop)
+      if (!kIsWeb) {
+        final session = await AudioSession.instance;
+        await session.configure(
+          const AudioSessionConfiguration(
+            avAudioSessionCategory: AVAudioSessionCategory.playback,
+            avAudioSessionMode: AVAudioSessionMode.spokenAudio,
+            androidAudioAttributes: AndroidAudioAttributes(
+              contentType: AndroidAudioContentType.speech,
+              flags: AndroidAudioFlags.none,
+              usage: AndroidAudioUsage.media,
+            ),
+            androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+            androidWillPauseWhenDucked: false,
           ),
-          androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
-          androidWillPauseWhenDucked: false,
-        ),
-      );
-      logger.d('AudioSession configured for speech playback with ducking');
-
-      // Listen to audio focus and system interruptions
-      session.interruptionEventStream.listen((event) async {
-        logger.d(
-          'Audio session interruption event: begin=${event.begin}, type=${event.type}',
         );
-        if (event.begin) {
-          switch (event.type) {
-            case AudioInterruptionType.duck:
-              _duckTimer?.cancel();
-              await setVolume(0.2);
-              _duckTimer = Timer(const Duration(seconds: 4), () {
-                if (_volume < 1.0) {
-                  setVolume(1.0);
+        logger.d('AudioSession configured for speech playback with ducking');
+
+        // Listen to audio focus and system interruptions
+        session.interruptionEventStream.listen((event) async {
+          logger.d(
+            'Audio session interruption event: begin=${event.begin}, type=${event.type}',
+          );
+          if (event.begin) {
+            switch (event.type) {
+              case AudioInterruptionType.duck:
+                _duckTimer?.cancel();
+                await setVolume(0.2);
+                _duckTimer = Timer(const Duration(seconds: 4), () {
+                  if (_volume < 1.0) {
+                    setVolume(1.0);
+                  }
+                });
+                break;
+              case AudioInterruptionType.pause:
+                if (_isPlaying) {
+                  logger.d('Player is playing, pausing due to interruption');
+                  _playInterrupted = true;
+                  await pause();
                 }
-              });
-              break;
-            case AudioInterruptionType.pause:
-              if (_isPlaying) {
-                logger.d('Player is playing, pausing due to interruption');
-                _playInterrupted = true;
-                await pause();
-              }
-              break;
-            case AudioInterruptionType.unknown:
-              if (_isPlaying) {
-                logger.d('Player is playing, pausing due to focus loss');
+                break;
+              case AudioInterruptionType.unknown:
+                if (_isPlaying) {
+                  logger.d('Player is playing, pausing due to focus loss');
+                  _playInterrupted = false;
+                  await pause();
+                }
+                break;
+            }
+          } else {
+            switch (event.type) {
+              case AudioInterruptionType.duck:
+                _duckTimer?.cancel();
+                await setVolume(1.0);
+                break;
+              case AudioInterruptionType.pause:
+                if (_playInterrupted) {
+                  logger.d('Resuming playback after interruption ended');
+                  _playInterrupted = false;
+                  await play();
+                }
+                break;
+              case AudioInterruptionType.unknown:
                 _playInterrupted = false;
-                await pause();
-              }
-              break;
+                break;
+            }
           }
-        } else {
-          switch (event.type) {
-            case AudioInterruptionType.duck:
-              _duckTimer?.cancel();
-              await setVolume(1.0);
-              break;
-            case AudioInterruptionType.pause:
-              if (_playInterrupted) {
-                logger.d('Resuming playback after interruption ended');
-                _playInterrupted = false;
-                await play();
-              }
-              break;
-            case AudioInterruptionType.unknown:
-              _playInterrupted = false;
-              break;
-          }
-        }
-      });
+        });
 
-      // Handle headphone unplugged (Becoming noisy)
-      session.becomingNoisyEventStream.listen((_) async {
-        logger.d(
-          'Audio becoming noisy (headphones unplugged), pausing playback',
-        );
-        await pause();
-      });
+        // Handle headphone unplugged (Becoming noisy)
+        session.becomingNoisyEventStream.listen((_) async {
+          logger.d(
+            'Audio becoming noisy (headphones unplugged), pausing playback',
+          );
+          await pause();
+        });
+      }
 
       _updatePlaybackState();
       logger.d('MyStreamAudioHandler._init() completed');
@@ -189,10 +194,17 @@ class MyStreamAudioHandler extends BaseAudioHandler {
           httpClient: _httpClient,
         );
       } else {
-        source = await _soloud.loadFile(
-          urlOrPath,
-          mode: LoadMode.disk,
-        );
+        if (kIsWeb) {
+          source = await _soloud.loadAsset(
+            urlOrPath,
+            mode: LoadMode.memory,
+          );
+        } else {
+          source = await _soloud.loadFile(
+            urlOrPath,
+            mode: LoadMode.disk,
+          );
+        }
       }
 
       _currentSource = source;
@@ -237,11 +249,13 @@ class MyStreamAudioHandler extends BaseAudioHandler {
   @override
   Future<void> play() async {
     _playInterrupted = false;
-    try {
-      final session = await AudioSession.instance;
-      await session.setActive(true);
-    } catch (e) {
-      logger.w('Failed to activate AudioSession: $e');
+    if (!kIsWeb) {
+      try {
+        final session = await AudioSession.instance;
+        await session.setActive(true);
+      } catch (e) {
+        logger.w('Failed to activate AudioSession: $e');
+      }
     }
 
     if (_currentHandle != null &&
@@ -301,11 +315,13 @@ class MyStreamAudioHandler extends BaseAudioHandler {
     _updatePlaybackState();
     _playerStateController.add(PlayerState(_isPlaying, _processingState));
 
-    try {
-      final session = await AudioSession.instance;
-      await session.setActive(false);
-    } catch (e) {
-      logger.w('Failed to deactivate AudioSession: $e');
+    if (!kIsWeb) {
+      try {
+        final session = await AudioSession.instance;
+        await session.setActive(false);
+      } catch (e) {
+        logger.w('Failed to deactivate AudioSession: $e');
+      }
     }
     return super.stop();
   }
