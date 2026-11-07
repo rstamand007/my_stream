@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
+import '../models/player_state.dart';
 import '../models/episode.dart';
 import '../services/audio_player_service.dart';
 import '../services/database_service.dart';
