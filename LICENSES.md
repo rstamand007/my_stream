@@ -7,7 +7,7 @@ This document lists all open source dependencies used in the My Stream podcast p
 ### Audio & Media
 | Package | Version | License |
 |---------|---------|---------|
-| just_audio | 0.9.46 | MIT |
+| flutter_soloud | 5.2.3 | MIT |
 | audio_service | 0.18.18 | MIT |
 | audio_session | 0.1.25 | MIT |
 
@@ -58,7 +58,6 @@ This document lists all open source dependencies used in the My Stream podcast p
 | plugin_platform_interface | 2.1.8 | BSD-3-Clause |
 | sqflite_platform_interface | 2.4.0 | BSD-2-Clause |
 | audio_service_platform_interface | 0.1.3 | MIT |
-| just_audio_platform_interface | 4.6.0 | MIT |
 
 ### Platform-Specific Implementations
 | Package | Version | License |
@@ -75,7 +74,6 @@ This document lists all open source dependencies used in the My Stream podcast p
 | Package | Version | License |
 |---------|---------|---------|
 | audio_service_web | 0.1.4 | MIT |
-| just_audio_web | 0.4.16 | MIT |
 | cached_network_image_web | 1.3.1 | MIT |
 | url_launcher_web | 2.4.2 | BSD-3-Clause |
 

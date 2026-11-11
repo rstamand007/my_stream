@@ -1,6 +1,6 @@
 import 'package:audio_service/audio_service.dart';
-import 'package:just_audio/just_audio.dart';
 import '../models/episode.dart';
+import '../models/player_state.dart';
 import '../utils/constants.dart';
 import '../utils/logger.dart';
 import 'audio_handler.dart';
@@ -12,12 +12,6 @@ class AudioPlayerService {
   /// Reference to the handler initialized in main.dart
   MyStreamAudioHandler? _handler;
   Episode? _currentEpisode;
-
-  // Private getters for safer access
-  AudioPlayer get _player {
-    if (_handler == null) throw Exception('AudioHandler not initialized');
-    return _handler!.player;
-  }
 
   MyStreamAudioHandler get _audioHandler {
     if (_handler == null) throw Exception('AudioHandler not initialized');
@@ -34,21 +28,23 @@ class AudioPlayerService {
   Episode? get currentEpisode => _currentEpisode;
 
   Stream<Duration> get positionStream =>
-      _handler?.player.positionStream ?? _emptyDurationStream;
+      _handler?.positionStream ?? _emptyDurationStream;
 
   Stream<Duration?> get durationStream =>
-      _handler?.player.durationStream ?? _emptyNullableDurationStream;
+      _handler?.durationStream ?? _emptyNullableDurationStream;
 
   Stream<PlayerState> get playerStateStream =>
-      _handler?.player.playerStateStream ?? _emptyPlayerStateStream;
+      _handler?.playerStateStream ?? _emptyPlayerStateStream;
 
   Stream<double> get speedStream =>
-      _handler?.player.speedStream ?? _emptyDoubleStream;
+      _handler?.speedStream ?? _emptyDoubleStream;
 
-  bool get isPlaying => _handler?.player.playing ?? false;
-  Duration get position => _handler?.player.position ?? Duration.zero;
-  Duration? get duration => _handler?.player.duration;
-  double get speed => _handler?.player.speed ?? 1.0;
+  bool get isPlaying => _handler?.isPlaying ?? false;
+  Duration get position => _handler?.position ?? Duration.zero;
+  Duration? get duration => _handler?.duration;
+  double get speed => _handler?.speed ?? 1.0;
+  ProcessingState get processingState =>
+      _handler?.processingState ?? ProcessingState.idle;
 
   /// Called from main.dart after AudioService.init
   void setHandler(MyStreamAudioHandler handler) {
@@ -66,7 +62,8 @@ class AudioPlayerService {
       final String url = episode.playbackUrl;
       if (url.isEmpty) throw Exception('Episode has no audio URL');
 
-      final String finalUrl = url.startsWith('http') ? Uri.encodeFull(url) : url;
+      final String finalUrl =
+          url.startsWith('http') ? Uri.encodeFull(url) : url;
       logger.d('Final URL: $finalUrl');
 
       _currentEpisode = episode;
@@ -83,19 +80,6 @@ class AudioPlayerService {
         ),
       );
 
-      // Set audio source
-      if (finalUrl.startsWith('http')) {
-        await _player.setUrl(
-          finalUrl,
-          headers: const {
-            'User-Agent':
-                'MyStreamPodcastPlayer/1.0.0 (https://github.com/rstamand007/my_stream)',
-          },
-        );
-      } else {
-        await _player.setFilePath(finalUrl);
-      }
-
       // Seek to saved position if available
       final seekTo =
           startPosition ??
@@ -103,11 +87,7 @@ class AudioPlayerService {
               ? Duration(seconds: episode.playbackPosition!)
               : null);
 
-      if (seekTo != null) {
-        await _player.seek(seekTo);
-      }
-
-      // Start playback
+      await _audioHandler.loadSource(finalUrl, startPosition: seekTo);
       await _audioHandler.play();
       logger.d('Playback started');
     } catch (e) {
@@ -118,10 +98,10 @@ class AudioPlayerService {
 
   // Play/Pause toggle
   Future<void> togglePlayPause() async {
-    if (_player.processingState == ProcessingState.completed) {
-      await _player.seek(Duration.zero);
+    if (_audioHandler.processingState == ProcessingState.completed) {
+      await _audioHandler.seek(Duration.zero);
       await play();
-    } else if (_player.playing) {
+    } else if (_audioHandler.isPlaying) {
       await pause();
     } else {
       await play();
@@ -145,17 +125,23 @@ class AudioPlayerService {
 
   // Skip forward
   Future<void> skipForward() async {
-    final newPosition = _player.position + AppDurations.skipForward;
-    final maxPosition = _player.duration ?? Duration.zero;
-    await _player.seek(newPosition > maxPosition ? maxPosition : newPosition);
+    final currentPos = _audioHandler.position;
+    final maxPosition = _audioHandler.duration;
+    var newPosition = currentPos + AppDurations.skipForward;
+    if (maxPosition != null && newPosition > maxPosition) {
+      newPosition = maxPosition;
+    }
+    await _audioHandler.seek(newPosition);
   }
 
   // Skip backward
   Future<void> skipBackward() async {
-    final newPosition = _player.position - AppDurations.skipBackward;
-    await _player.seek(
-      newPosition < Duration.zero ? Duration.zero : newPosition,
-    );
+    final currentPos = _audioHandler.position;
+    var newPosition = currentPos - AppDurations.skipBackward;
+    if (newPosition < Duration.zero) {
+      newPosition = Duration.zero;
+    }
+    await _audioHandler.seek(newPosition);
   }
 
   // Set playback speed

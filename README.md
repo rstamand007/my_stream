@@ -6,7 +6,7 @@ A modern podcast player application built with Flutter for Android and cross-pla
 
 - 🔍 **Podcast Search & Discovery** - Search and explore podcasts globally using the iTunes Search API integration.
 - 📚 **Subscription Management** - Subscribe to your favorite shows to build a personalized library with offline caching.
-- 🎵 **Advanced Audio Playback** - Background audio playback utilizing `just_audio` and `audio_service` with skip controls and flexible speed adjustment (0.5x - 2.0x).
+- 🎵 **Advanced Audio Playback** - Background audio playback utilizing `flutter_soloud` and `audio_service` with skip controls and flexible speed adjustment (0.5x - 2.0x).
 - 📥 **Offline Download Manager** - Download episodes for offline listening, with custom configurable options like autoplay (automatically play next downloaded episode) and auto-deletion of completed episodes upon completion.
 - 🎨 **Adaptive Theme & Premium UI** - Built with Material Design 3 supporting Dark, Light, and System theme synchronization. Features custom neumorphic interactive control elements and modern gradients.
 - 🌐 **Multi-Language Support (Localization)** - Fully localized in English (`en`) and French (`fr`) with dynamic language switching in settings.
@@ -98,7 +98,7 @@ lib/
 
 Key packages utilized in the project:
 * State Management: `provider`
-* Audio Playback: `just_audio` & `audio_service`
+* Audio Playback: `flutter_soloud` & `audio_service`
 * Database: `hive` & `hive_flutter`
 * API & Feeds: `podcast_search` & `webfeed_revised`
 * Caching: `cached_network_image`
